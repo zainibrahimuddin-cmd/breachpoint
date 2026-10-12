@@ -26,8 +26,11 @@ function buildPage() {
 <meta name="author" content="Zain">
 <meta name="apple-mobile-web-app-title" content="Breachpoint">
 <link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
 <title>Breachpoint</title>
-<style>html,body{margin:0;height:100%;overscroll-behavior:none;-webkit-text-size-adjust:100%}</style>
+<style>html,body{margin:0;height:100%;background:#07090c;overscroll-behavior:none;-webkit-text-size-adjust:100%}</style>
 </head>
 <body>
 ${body}
@@ -41,8 +44,21 @@ const server = http.createServer((req, res) => {
   if (url === '/health') { res.writeHead(200, { 'Content-Type': 'text/plain' }); res.end('ok'); return; }
   if (url === '/manifest.webmanifest') {
     res.writeHead(200, { 'Content-Type': 'application/manifest+json' });
-    res.end(JSON.stringify({ name: 'Breachpoint', short_name: 'Breachpoint', description: 'Tactical breach-and-defuse shooter. Created by Zain.', start_url: '/', display: 'fullscreen', orientation: 'landscape', background_color: '#07090c', theme_color: '#07090c' }));
+    res.end(JSON.stringify({
+      name: 'Breachpoint', short_name: 'Breachpoint', description: 'Tactical breach-and-defuse shooter. Created by Zain.',
+      start_url: '/', display: 'fullscreen', orientation: 'landscape', background_color: '#07090c', theme_color: '#07090c',
+      icons: [
+        { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+        { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      ],
+    }));
     return;
+  }
+  const icon = url.match(/^\/icons\/([a-z0-9-]+\.png)$/);
+  if (icon) {
+    const f = path.join(__dirname, 'icons', icon[1]);
+    if (fs.existsSync(f)) { res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400' }); res.end(fs.readFileSync(f)); return; }
   }
   if (url === '/' || url === '/index.html') {
     if (process.env.NODE_ENV !== 'production') page = buildPage();
@@ -56,7 +72,7 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 64 * 1024 });
 const rooms = new Map();
 let nextId = 1;
-const OPS = ['breaker', 'spectre', 'havoc', 'lumen'];
+const OPS = ['breaker', 'spectre', 'havoc', 'lumen', 'shroud', 'relay', 'raze'];
 
 function makeCode() {
   const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
