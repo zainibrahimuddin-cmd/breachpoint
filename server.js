@@ -24,6 +24,9 @@ function buildPage() {
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#07090c">
 <meta name="author" content="Zain">
+<meta name="apple-mobile-web-app-title" content="Breachpoint">
+<link rel="manifest" href="/manifest.webmanifest">
+<title>Breachpoint</title>
 <style>html,body{margin:0;height:100%;overscroll-behavior:none;-webkit-text-size-adjust:100%}</style>
 </head>
 <body>
@@ -36,6 +39,11 @@ let page = buildPage();
 const server = http.createServer((req, res) => {
   const url = req.url.split('?')[0];
   if (url === '/health') { res.writeHead(200, { 'Content-Type': 'text/plain' }); res.end('ok'); return; }
+  if (url === '/manifest.webmanifest') {
+    res.writeHead(200, { 'Content-Type': 'application/manifest+json' });
+    res.end(JSON.stringify({ name: 'Breachpoint', short_name: 'Breachpoint', description: 'Tactical breach-and-defuse shooter. Created by Zain.', start_url: '/', display: 'fullscreen', orientation: 'landscape', background_color: '#07090c', theme_color: '#07090c' }));
+    return;
+  }
   if (url === '/' || url === '/index.html') {
     if (process.env.NODE_ENV !== 'production') page = buildPage();
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
