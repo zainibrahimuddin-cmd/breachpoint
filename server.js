@@ -72,6 +72,7 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 64 * 1024 });
 const rooms = new Map();
 let nextId = 1;
+const MAPS = ['kestrel', 'harbor', 'lodge'];
 const OPS = ['breaker', 'spectre', 'havoc', 'lumen', 'shroud', 'relay', 'raze'];
 
 function makeCode() {
@@ -87,7 +88,7 @@ function broadcast(room, o, except) {
   const s = JSON.stringify(o);
   for (const c of room.clients.values()) if (c.ws !== except && c.ws.readyState === 1) c.ws.send(s);
 }
-const sendRoster = room => broadcast(room, { t: 'roster', list: roster(room), host: room.host, started: room.started });
+const sendRoster = room => broadcast(room, { t: 'roster', list: roster(room), host: room.host, started: room.started, map: room.map });
 const teamCount = (room, team) => [...room.clients.values()].filter(c => c.team === team).length;
 
 wss.on('connection', ws => {
@@ -103,7 +104,7 @@ wss.on('connection', ws => {
       if (me.room) return;
       let room;
       if (m.t === 'create') {
-        room = { code: makeCode(), host: me.id, clients: new Map(), started: false };
+        room = { code: makeCode(), host: me.id, clients: new Map(), started: false, map: 'kestrel' };
         rooms.set(room.code, room);
       } else {
         room = rooms.get(String(m.code || '').toUpperCase());
@@ -117,7 +118,7 @@ wss.on('connection', ws => {
       if (teamCount(room, me.team) >= TEAM_MAX) me.team = me.team === 'atk' ? 'def' : 'atk';
       me.room = room;
       room.clients.set(me.id, me);
-      send(ws, { t: 'joined', id: me.id, code: room.code, host: room.host });
+      send(ws, { t: 'joined', id: me.id, code: room.code, host: room.host, map: room.map });
       sendRoster(room);
       return;
     }
@@ -132,10 +133,14 @@ wss.on('connection', ws => {
       case 'op':
         if (!OPS.includes(m.op)) return;
         me.op = m.op; sendRoster(room); return;
+      case 'map':
+        if (me.id !== room.host || room.started || !MAPS.includes(m.map)) return;
+        room.map = m.map; sendRoster(room); return;
       case 'start':
         if (me.id !== room.host || room.started || teamCount(room, 'atk') === 0) return;
         room.started = true;
-        broadcast(room, { t: 'start', roster: roster(room), host: room.host });
+        if (MAPS.includes(m.map)) room.map = m.map;
+        broadcast(room, { t: 'start', roster: roster(room), host: room.host, map: room.map });
         return;
       case 'lobby':
         if (me.id !== room.host) return;
