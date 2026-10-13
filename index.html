@@ -70,6 +70,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
 .seg button{background:var(--panel);border:1px solid var(--line);padding:10px 8px;cursor:pointer;font-family:var(--display);font-weight:600;letter-spacing:.14em;font-size:15px;color:var(--mute);transition:all .15s}
 .seg button:hover{color:var(--ink);border-color:rgba(232,236,240,.35)}
+.seg button.rnd{color:var(--atk);border-style:dashed}
 .seg button[aria-pressed="true"]{color:var(--ink);border-color:var(--atk);background:rgba(255,138,30,.14)}
 .opchip{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);padding:10px 14px;cursor:pointer;width:100%;text-align:left;transition:border-color .15s}
 .opchip:hover{border-color:var(--atk)}
@@ -454,6 +455,7 @@ body.touch #banner .t{font-size:30px}
 body.touch #banner .s{font-size:13px}
 #t-pause{left:calc(14px + env(safe-area-inset-left,0px));top:calc(44px + env(safe-area-inset-top,0px));width:44px;height:44px;font-size:14px}
 #t-score{left:calc(66px + env(safe-area-inset-left,0px));top:calc(44px + env(safe-area-inset-top,0px))}
+.tb.rope{right:calc(340px + env(safe-area-inset-right,0px));bottom:calc(170px + env(safe-area-inset-bottom,0px));width:74px;height:46px;border-radius:23px;font-size:12px;border-color:rgba(255,138,30,.7)}
 .tb.use{right:calc(340px + env(safe-area-inset-right,0px));bottom:calc(100px + env(safe-area-inset-bottom,0px));width:70px;height:70px;border-color:var(--ok);color:var(--ok);font-size:13px}
 #rotate{display:none}
 body.touch .hint-desk{display:none}
@@ -495,6 +497,7 @@ html{background:var(--bg)}
   #menu{background:linear-gradient(90deg,rgba(5,7,10,.92),rgba(5,7,10,.7))}
 }
 @media (max-height:760px){ .rail .intel{display:none} }
+@media (max-height:820px) and (min-width:900px){ .hero p{display:none} .hero h1{font-size:clamp(30px,min(6vw,8.5vh),84px)} #scr-play{align-content:start} }
 @media (max-height:600px){ .hero p{display:none} }
 @media (max-height:520px){
   .topbar{padding:6px 16px;gap:12px}
@@ -583,7 +586,7 @@ body.standalone #gl,body.standalone #menu,body.standalone #hud,body.standalone #
     <div class="hero">
       <div class="eyebrow" id="heroEyebrow">Operation · Kestrel House</div>
       <h1 id="heroTitle">Breach <br><em>the</em> House</h1>
-      <p id="heroText">Five defenders have fortified a suburban house. First to three rounds wins.</p>
+      <p id="heroText">Five defenders have fortified a suburban house. Sides swap every two rounds — first to four wins.</p>
       <button class="deploy" id="btn-deploy">DEPLOY <small>ENTER</small></button>
       <div class="setup">
         <div>
@@ -592,6 +595,9 @@ body.standalone #gl,body.standalone #menu,body.standalone #hud,body.standalone #
             <button data-m="kestrel" id="m-kestrel">KESTREL</button>
             <button data-m="harbor" id="m-harbor">HARBORVIEW</button>
             <button data-m="lodge" id="m-lodge">CEDAR LODGE</button>
+            <button data-m="bank" id="m-bank">MERIDIAN BANK</button>
+            <button data-m="hotel" id="m-hotel">HOTEL ASHFORD</button>
+            <button data-m="random" id="m-random" class="rnd" title="Pick a random map">⟳ RANDOM</button>
           </div>
         </div>
         <div>
@@ -689,6 +695,7 @@ body.standalone #gl,body.standalone #menu,body.standalone #hud,body.standalone #
         <div class="key-row"><span>Reload</span><kbd>R</kbd></div>
         <div class="key-row"><span>Use gadget</span><kbd>G</kbd></div>
         <div class="key-row"><span>Throw grenade</span><kbd>H</kbd></div>
+        <div class="key-row"><span>Rappel on an outside wall / roof edge</span><kbd>T</kbd></div>
         <div class="key-row"><span>Primary / pistol</span><span><kbd>1</kbd> <kbd>2</kbd> <kbd>X</kbd> or wheel</span></div>
         <div class="key-row"><span>Plant defuser (hold)</span><kbd>F</kbd></div>
         <div class="key-row"><span>Melee</span><kbd>V</kbd></div>
@@ -765,6 +772,7 @@ body.standalone #gl,body.standalone #menu,body.standalone #hud,body.standalone #
   <button class="tb" data-t="ads" id="t-ads" aria-label="Aim down sights">AIM</button>
   <button class="tb fire" data-t="fire" id="t-fire" aria-label="Fire">FIRE</button>
   <button class="tb use" data-t="use" id="t-use" aria-label="Plant or disable" hidden>HOLD</button>
+  <button class="tb rope" data-t="rope" id="t-rope" aria-label="Rappel" hidden>ROPE</button>
 </div>
 <div id="rotate"><div><b>ROTATE YOUR PHONE</b><span>Breachpoint plays in landscape.</span></div></div>
 
@@ -790,7 +798,7 @@ body.standalone #gl,body.standalone #menu,body.standalone #hud,body.standalone #
       <div class="lb-team atk"><h3>ATTACKERS <span id="lb-atkn">0/5</span></h3><div class="lb-list" id="lb-atk"></div><button class="mbtn" id="lb-joinatk">JOIN ATTACK</button></div>
       <div class="lb-team def"><h3>DEFENDERS <span id="lb-defn">0/5</span></h3><div class="lb-list" id="lb-def"></div><button class="mbtn" id="lb-joindef">JOIN DEFENSE</button></div>
     </div>
-    <div><div class="field-label">Map <span id="lb-maphint"></span></div><div class="seg maps" id="lb-maps"><button data-m="kestrel">KESTREL</button><button data-m="harbor">HARBORVIEW</button><button data-m="lodge">CEDAR LODGE</button></div></div>
+    <div><div class="field-label">Map <span id="lb-maphint"></span></div><div class="seg maps" id="lb-maps"><button data-m="kestrel">KESTREL</button><button data-m="harbor">HARBORVIEW</button><button data-m="lodge">CEDAR LODGE</button><button data-m="bank">MERIDIAN BANK</button><button data-m="hotel">HOTEL ASHFORD</button><button data-m="random" class="rnd">⟳ RANDOM</button></div></div>
     <div><div class="field-label">Your operator</div><div class="lb-ops" id="lb-ops"></div></div>
     <div class="lb-note" id="lb-note" role="status"></div>
     <div class="lb-foot"><span id="lb-status"></span><div class="lb-btns"><button class="mbtn" id="lb-leave">LEAVE</button><button class="mbtn primary" id="lb-start">START MATCH</button></div></div>
@@ -2148,7 +2156,7 @@ const MAPS = {
   lodge: {
     name: 'CEDAR LODGE', tag: 'Timber lodge · 2 floors', title: ['Raid', 'the', 'Lodge'],
     blurb: 'A remote log lodge with a great room, bar and an upstairs library. The bomb is in the ground-floor bar or the upstairs library. Expect tight hallways and long sight lines across the great room.',
-    floors: 2, inside: [-13, 13, -9, 9], probe: [-5, 1.5, 3],
+    floors: 2, noRoof: true, inside: [-13, 13, -9, 9], probe: [-5, 1.5, 3],
     paved: [[-16, 16, -12, 12, 'roof'], [-3, 3, 12, 26, 'roof']],
     menu: { cam: [14, 3.6, 27], target: [0, 3.4, 6], model: [10.2, 23.6], opsCam: [11.4, 1.45, 27.3], opsTarget: [9.3, 1.1, 23.4] },
     sites: [{ name: 'BAR', f: 0, x: 12.2, z: -8.3, px: 11.5, pz: -8.0 }, { name: 'LIBRARY', f: 1, x: -4.2, z: 8.2, px: -4.8, pz: 7.7 }],
@@ -2229,8 +2237,186 @@ const MAPS = {
     },
   },
 };
+Object.assign(MAPS, {
+  // -------------------------------------------------------------------------------------------
+  bank: {
+    name: 'MERIDIAN BANK', tag: 'City bank · 2 floors', title: ['Crack', 'the', 'Bank'],
+    blurb: 'A downtown branch bank with a marble lobby, teller line and a steel vault. The bomb is in the ground-floor vault or the upstairs executive office. Long lobby sight lines, tight back corridors.',
+    floors: 2, inside: [-14, 14, -10, 10], probe: [0, 1.5, 4],
+    paved: [[-17, 17, -13, 13, 'concrete'], [-5, 5, 13, 26, 'concrete']],
+    menu: { cam: [15, 3.4, 27], target: [0, 3.6, 8], model: [10.2, 23.6], opsCam: [11.4, 1.45, 27.3], opsTarget: [9.3, 1.1, 23.4] },
+    sites: [{ name: 'VAULT', f: 0, x: 12.6, z: -8.4, px: 11.6, pz: -7.6 }, { name: 'EXECUTIVE OFFICE', f: 1, x: -12.6, z: 8.4, px: -11.6, pz: 7.6 }],
+    rooms: [
+      { f: 0, name: 'LOBBY', x0: -14, x1: 4, z0: 2, z1: 10, lx: -5, lz: 6 }, { f: 0, name: 'TELLER LINE', x0: -14, x1: 4, z0: -2, z1: 2, lx: -5, lz: 0 },
+      { f: 0, name: 'VAULT', x0: 4, x1: 14, z0: -10, z1: -1, lx: 9, lz: -5.5, site: 0 }, { f: 0, name: 'SECURITY', x0: 4, x1: 14, z0: -1, z1: 10, lx: 9, lz: 4.5 },
+      { f: 0, name: 'BACK OFFICE', x0: -14, x1: -4, z0: -10, z1: -2, lx: -9, lz: -6 }, { f: 0, name: 'STAIRWELL', x0: -4, x1: 4, z0: -10, z1: -2, lx: 0, lz: -5 },
+      { f: 1, name: 'EXECUTIVE OFFICE', x0: -14, x1: -3, z0: 2, z1: 10, lx: -8.5, lz: 6, site: 1 }, { f: 1, name: 'CONFERENCE', x0: -3, x1: 6, z0: 2, z1: 10, lx: 1.5, lz: 6 },
+      { f: 1, name: 'SERVER ROOM', x0: 6, x1: 14, z0: 2, z1: 10, lx: 10, lz: 6 }, { f: 1, name: 'OPEN OFFICE', x0: -14, x1: 4, z0: -10, z1: -2, lx: -5, lz: -6 },
+      { f: 1, name: 'ARCHIVE', x0: 4, x1: 14, z0: -10, z1: -2, lx: 9, lz: -6 }, { f: 1, name: 'LANDING', x0: -14, x1: 14, z0: -2, z1: 2, lx: 0, lz: 0 },
+    ],
+    spawns: [
+      { f: 0, x: 12, z: -3.5, fx: 4, fz: -5.5, site: 0 }, { f: 0, x: 6.2, z: -8.6, fx: 4, fz: -5.5, site: 0 }, { f: 0, x: 9, z: -2.4, fx: 4, fz: -5.5, site: 0 }, { f: 0, x: 11, z: 3, fx: 4, fz: 6, site: 0 },
+      { f: 1, x: -8, z: 8.6, fx: -8, fz: 2, site: 1 }, { f: 1, x: -12.6, z: 3.6, fx: -3, fz: 6, site: 1 }, { f: 1, x: -4.6, z: 3.6, fx: -8, fz: 2, site: 1 }, { f: 1, x: 0, z: 7.8, fx: -3, fz: 6, site: 1 },
+      { f: 0, x: -6, z: 6, fx: -6, fz: 10, roam: true }, { f: 0, x: -6, z: 0, fx: -6, fz: 2, roam: true }, { f: 0, x: -9, z: -6, fx: -9, fz: -2, roam: true }, { f: 0, x: 9, z: 5, fx: 9, fz: 10, roam: true },
+      { f: 1, x: 1, z: 0, fx: 14, fz: 0, roam: true }, { f: 1, x: 10, z: 6, fx: 10, fz: 2, roam: true }, { f: 1, x: -8, z: -6, fx: -8, fz: -2, roam: true }, { f: 1, x: 9, z: -6, fx: 9, fz: -2, roam: true },
+    ],
+    roam: [[0, -6, 6], [0, 0, 6], [0, -6, 0], [0, -9, -6], [0, 1, -5], [0, 9, 5], [1, -8, 6], [1, 1.5, 6], [1, 10, 6], [1, -9, -6], [1, 9, -6], [1, 0, 0]],
+    build() {
+      outdoorsBase({ paved: this.paved, city: true });
+      // plaza: bollards, planters, ATM
+      for (const x of [-4, -2, 2, 4]) { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.9, 16), MAT.steel); b.position.set(x, 0.45, 12.6); b.castShadow = true; world.add(b); addCol(x - 0.13, 0, 12.47, x + 0.13, 0.9, 12.73, 'prop', { mat: 'metal' }); }
+      for (const x of [-11, 11]) { solid(x, 0, 12.2, 2.2, 0.55, 1.0, MAT.stone, 'prop', false); tree(x, 12.2, 0.55, rng(x + 50), false); }
+      onFloor(0, () => {
+        floorPlane(-13.85, 13.85, -9.85, 9.85, MAT.tiles, 0.01); floorPlane(4.15, 13.85, -9.85, -1.1, MAT.concreteIn, 0.012); floorPlane(-13.85, -4.1, -9.85, -2.1, MAT.carpet, 0.012);
+        shell(-14, 14, -10, 10, { matOut: MAT.stone, matIn: MAT.plaster, s: [Wn(-11.5, false, 2.2), Wn(-8, false, 2.2), D(-4.6, false, 2.2), Wn(0, true, 2.2), Wn(6, false, 2.2), Wn(11, true, 2.2)], n: [D(-9, true), Wn(-1), Wn(9, true)], w: [Wn(5), D(-6, true)], e: [Wn(5, true), D(1.5, true), Wn(-6)] });
+        boxMesh(0.8, 0.85, 10.2, 0.9, 1.5, 0.12, MAT.black); boxMesh(0.8, 1.2, 10.27, 0.5, 0.35, 0.02, MAT.screen, false, false);   // ATM in the facade
+        softWall({ axis: 'x', at: -2, from: -13.85, to: 3.92, openings: [iD(-9), iD(0)] });
+        softWall({ axis: 'z', at: 4, from: -9.85, to: 9.85, openings: [iD(-5.5, 1.4), iD(0.5), iD(6, 1.6)] });
+        softWall({ axis: 'x', at: -1, from: 4.08, to: 13.85, openings: [iD(9, 1.05, true)] });
+        softWall({ axis: 'z', at: -4, from: -9.85, to: -2.08, openings: [iD(-6)] });
+        // lobby: teller counter with glass, queue posts, benches, plants
+        counter(-12.6, 1.6, 1.55, 2.35, MAT.darkWood);
+        for (let x = -12; x < 1.6; x += 2.3) { const gl = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.75, 0.02), MAT.glass); gl.position.set(x + 1.05, 1.32, 1.95); world.add(gl); }
+        for (const x of [-10.8, -8.5, -6.2, -3.9, -1.6]) { F('schoolChair', x, 0.7, 0); F('desk', x, -1.0, Math.PI); }
+        for (const [x, z] of [[-9, 5.2], [-7, 5.2], [-5, 5.2], [-3, 5.2], [-9, 7.2], [-3, 7.2]]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.12, 0.95, 12), MAT.chrome); p.position.set(x, 0.48, z); world.add(p); }
+        F('sofa3', -12.7, 6, Math.PI / 2); F('sofa3', 2.8, 7.5, -Math.PI / 2); F('plant', -13.3, 9.3); F('plant', 3.3, 9.3); F('plant', -13.3, 2.6); F('coffeeRound', -11.6, 6);
+        rug(-5, 7, 6, 3, 0x2a3446);
+        // vault: steel deposit-box walls, open round vault door, cash carts
+        for (let r = 0; r < 8; r++) for (let c = 0; c < 22; c++) boxMesh(13.62, 0.25 + r * 0.29, -9.55 + c * 0.37, 0.4, 0.27, 0.35, MAT.steel);
+        addCol(13.4, 0, -9.85, 13.85, 2.5, -1.4, 'hard', { mat: 'metal' }); BP.props.push({ f: FLOOR, x: 13.62, z: -5.6, w: 0.45, d: 8.4 });
+        for (let r = 0; r < 8; r++) for (let c = 0; c < 9; c++) boxMesh(5.0 + c * 0.37, 0.25 + r * 0.29, -9.62, 0.35, 0.27, 0.4, MAT.steel);
+        addCol(4.8, 0, -9.85, 8.4, 2.5, -9.4, 'hard', { mat: 'metal' });
+        { const vd = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.15, 0.42, 40), MAT.steel); vd.rotation.x = Math.PI / 2; vd.rotation.z = Math.PI / 2; vd.position.set(5.0, 1.25, -7.3); vd.castShadow = true; world.add(vd);
+          for (let k = 0; k < 6; k++) { const bolt = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.5, 12), MAT.chrome); const a = k / 6 * Math.PI * 2; bolt.rotation.z = Math.PI / 2; bolt.position.set(5.0, 1.25 + Math.sin(a) * 0.95, -7.3 + Math.cos(a) * 0.95); world.add(bolt); }
+          const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.6, 20), MAT.chrome); hub.rotation.z = Math.PI / 2; hub.position.set(5.0, 1.25, -7.3); world.add(hub);
+          addCol(4.75, 0, -8.45, 5.25, 2.4, -6.15, 'hard', { mat: 'metal' }); }
+        F('crate', 9.5, -8.6); F('crate', 10.6, -8.6); F('barrel', 7.2, -4.6); solid(10, 0, -5, 1.6, 0.9, 0.8, MAT.steel); deployShield(8.3, -2.2, 0); deployShield(6.3, -6.5, Math.PI / 2);
+        // security office
+        for (const z of [8.9, 7.3]) serverRack(13.3, z, -Math.PI / 2); F('desk', 9, 8.9, Math.PI); F('desk', 7, 8.9, Math.PI); F('schoolChair', 9, 8.1); F('schoolChair', 7, 8.1); F('cabinet', 5, 1.2); F('trash', 12.9, 0);
+        for (const x of [7, 9]) boxMesh(x, 1.25, 9.4, 1.2, 0.6, 0.05, MAT.screen, false, false);
+        // back office + stairwell
+        cubicle(-12, -8.3, 0); cubicle(-9.2, -8.3, 0); cubicle(-12, -4.6, Math.PI); F('bookshelf', -6.2, -9.55); F('cabinet', -4.7, -3.0, -Math.PI / 2); F('plant', -4.6, -9.4);
+        STAIR_HOLES.push(stairs(-3.2, -8.8, '+x', 1.15)); vending(3.3, -2.6, Math.PI);
+        ceilLight(-9, 6, 0xfff2dc, 52, true, true); ceilLight(-2, 6, 0xfff2dc, 52, false, true); ceilLight(-6, 0, 0xfff2dc, 40, false, true); ceilLight(9, -5.5, 0xe8f0ff, 50, true, true); ceilLight(9, 5, 0xe8f0ff, 46, false, true); ceilLight(-9, -6, 0xfff0dc, 42, false, true); ceilLight(0, -5.5, 0xfff0dc, 34);
+        slab(-14.15, 14.15, -10.15, 10.15, STAIR_HOLES.splice(0), MAT.carpet, MAT.plaster);
+      });
+      onFloor(1, () => {
+        shell(-14, 14, -10, 10, { matOut: MAT.stone, matIn: MAT.plaster, s: [Wn(-12, false, 1.8), Wn(-9, true, 1.8), Wn(-5.5, false, 1.8), Wn(-0.5, false, 1.8), Wn(3.5, true, 1.8), Wn(8, false, 1.8), Wn(12, false, 1.8)], n: [Wn(-11), Wn(-6, true), Wn(2), Wn(8), Wn(12, true)], w: [Wn(-6), Wn(5, true)], e: [Wn(-6, true), Wn(6)] });
+        softWall({ axis: 'x', at: 2, from: -13.85, to: 13.85, openings: [iD(-8, 1.2, true), iD(1.5, 1.6), iD(10)] });
+        softWall({ axis: 'x', at: -2, from: -13.85, to: 13.85, openings: [iD(-6), iD(2.5, 1.6), iD(9)] });
+        softWall({ axis: 'z', at: -3, from: 2.08, to: 9.85, openings: [iD(5)] }); softWall({ axis: 'z', at: 6, from: 2.08, to: 9.85 });
+        softWall({ axis: 'z', at: 4, from: -9.85, to: -2.08, openings: [iD(-5.5)] });
+        railing(-3.25, -8.15, 0.2, -8.15);
+        // executive office (site B)
+        F('desk', -9, 7.8, Math.PI); F('armchair', -9, 8.9, Math.PI); F('bookshelf', -13.55, 5.5, Math.PI / 2); F('bookshelf', -13.55, 3.3, Math.PI / 2); F('sofa', -5.2, 6.5, -Math.PI / 2); F('coffee', -6.6, 6.5, Math.PI / 2);
+        F('clock', -3.5, 9.4, Math.PI); F('lamp', -9.6, 7.8, 0, 0.76); rug(-8, 6, 4, 3, 0x4a2a24); deployShield(-9, 3.2, 0); deployShield(-12, 3.4, 0);
+        // conference
+        F('dining', 1.5, 6.2, 0); for (const x of [0.3, 1.5, 2.7]) { F('chair', x, 5.3, 0); F('chair', x, 7.1, Math.PI); } boxMesh(1.5, 1.7, 9.8, 2.6, 1.4, 0.05, MAT.screen, false, false); F('plant', -2.5, 9.4);
+        // server room
+        for (const z of [9.0, 7.6, 6.2, 4.8]) { serverRack(9, z, -Math.PI / 2); serverRack(12.4, z, Math.PI / 2); } F('crate', 7, 2.7);
+        // open office + archive
+        cubicle(-12, -8.6, 0); cubicle(-9, -8.6, 0); cubicle(-6, -8.6, 0); cubicle(-12, -4.4, Math.PI); cubicle(-9, -4.4, Math.PI); F('plant', 3.3, -9.3); F('cabinet', 2.4, -2.9, Math.PI);
+        for (const x of [5.3, 7.4, 9.5, 11.6]) { F('shelf', x, -9.4); F('shelf', x, -6.2, Math.PI); } F('crate', 12.9, -3);
+        ceilLight(-8.5, 6, 0xfff0dc, 48, true, true); ceilLight(1.5, 6, 0xfff4e4, 46, false, true); ceilLight(10, 6, 0xd8e8ff, 44, false, true); ceilLight(-8, -6, 0xfff0dc, 44, false, true); ceilLight(9, -6, 0xfff0dc, 40, false, true); ceilLight(0, 0, 0xfff0dc, 30);
+        flatRoof(-14, 14, -10, 10, MAT.stone);
+      });
+    },
+  },
+  // -------------------------------------------------------------------------------------------
+  hotel: {
+    name: 'HOTEL ASHFORD', tag: 'Boutique hotel · 3 floors', title: ['Storm', 'the', 'Hotel'],
+    blurb: 'A three-storey boutique hotel: lobby bar and restaurant downstairs, guest rooms above and a penthouse suite on top. The bomb is in the ground-floor bar or the top-floor penthouse. Switchback stairs, long corridors, lots of doors.',
+    floors: 3, inside: [-12, 12, -9, 9], probe: [0, 1.5, 4],
+    paved: [[-15, 15, -12, 12, 'concrete'], [-3, 3, 12, 26, 'concrete']],
+    menu: { cam: [16, 4.8, 28], target: [0, 5.2, 6], model: [10.2, 23.6], opsCam: [11.4, 1.45, 27.3], opsTarget: [9.3, 1.1, 23.4] },
+    sites: [{ name: 'BAR', f: 0, x: 11.3, z: 7.9, px: 10.5, pz: 7.2 }, { name: 'PENTHOUSE', f: 2, x: 11.3, z: 8.0, px: 10.4, pz: 7.3 }],
+    rooms: [
+      { f: 0, name: 'LOBBY', x0: -4, x1: 6, z0: 1, z1: 9, lx: 1, lz: 5 }, { f: 0, name: 'RESTAURANT', x0: -12, x1: -4, z0: 1, z1: 9, lx: -8, lz: 5 },
+      { f: 0, name: 'BAR', x0: 6, x1: 12, z0: -3, z1: 9, lx: 9, lz: 3, site: 0 }, { f: 0, name: 'KITCHEN', x0: 1, x1: 12, z0: -9, z1: -3, lx: 6, lz: -6 },
+      { f: 0, name: 'STAIR HALL', x0: -12, x1: -4, z0: -9, z1: 1, lx: -8, lz: -4 }, { f: 0, name: 'LUGGAGE ROOM', x0: -4, x1: 1, z0: -9, z1: 1, lx: -1.5, lz: -4 },
+      { f: 1, name: 'ROOM 201', x0: -12, x1: -4, z0: 1.5, z1: 9, lx: -8, lz: 5 }, { f: 1, name: 'ROOM 202', x0: -4, x1: 4, z0: 1.5, z1: 9, lx: 0, lz: 5 },
+      { f: 1, name: 'ROOM 205', x0: 4, x1: 12, z0: 1.5, z1: 9, lx: 8, lz: 5 }, { f: 1, name: 'STAIR HALL', x0: -12, x1: -4, z0: -9, z1: -1.5, lx: -8, lz: -4 },
+      { f: 1, name: 'ROOM 203', x0: -4, x1: 4, z0: -9, z1: -1.5, lx: 0, lz: -5 }, { f: 1, name: 'ROOM 204', x0: 4, x1: 12, z0: -9, z1: -1.5, lx: 8, lz: -5 },
+      { f: 1, name: 'CORRIDOR', x0: -12, x1: 12, z0: -1.5, z1: 1.5, lx: 0, lz: 0 },
+      { f: 2, name: 'PENTHOUSE', x0: -4, x1: 12, z0: 1.5, z1: 9, lx: 4, lz: 5, site: 1 }, { f: 2, name: 'ROOM 301', x0: -12, x1: -4, z0: 1.5, z1: 9, lx: -8, lz: 5 },
+      { f: 2, name: 'STAIR HALL', x0: -12, x1: -4, z0: -9, z1: -1.5, lx: -8, lz: -4 }, { f: 2, name: 'OFFICE', x0: -4, x1: 4, z0: -9, z1: -1.5, lx: 0, lz: -5 },
+      { f: 2, name: 'ROOM 304', x0: 4, x1: 12, z0: -9, z1: -1.5, lx: 8, lz: -5 }, { f: 2, name: 'CORRIDOR', x0: -12, x1: 12, z0: -1.5, z1: 1.5, lx: 0, lz: 0 },
+    ],
+    spawns: [
+      { f: 0, x: 11, z: 2.6, fx: 6, fz: 3, site: 0 }, { f: 0, x: 8, z: -2.3, fx: 6, fz: 5, site: 0 }, { f: 0, x: 11.4, z: -2.2, fx: 6, fz: 3, site: 0 }, { f: 0, x: 7, z: 8.4, fx: 4, fz: 5, site: 0 },
+      { f: 2, x: 10, z: 3, fx: 2, fz: 1.5, site: 1 }, { f: 2, x: -2.6, z: 7.6, fx: 2, fz: 1.5, site: 1 }, { f: 2, x: 6, z: 8.2, fx: 2, fz: 1.5, site: 1 }, { f: 2, x: 11, z: -0.6, fx: -4, fz: 0, site: 1 },
+      { f: 0, x: 0, z: 5, fx: 0, fz: 9, roam: true }, { f: 0, x: -8, z: 5, fx: -8, fz: 9, roam: true }, { f: 0, x: 6, z: -6, fx: 6, fz: -3, roam: true }, { f: 0, x: -1.5, z: -4, fx: -1.5, fz: 1, roam: true },
+      { f: 1, x: 0, z: 0, fx: 12, fz: 0, roam: true }, { f: 1, x: 8, z: 5, fx: 8, fz: 1.5, roam: true }, { f: 1, x: 0, z: -5, fx: 0, fz: -1.5, roam: true }, { f: 2, x: -1, z: 0, fx: -12, fz: 0, roam: true },
+    ],
+    roam: [[0, 0, 5], [0, -8, 5], [0, 9, 2], [0, 6, -6], [0, -8, -4], [1, -8, 5], [1, 0, 5], [1, 8, 5], [1, 0, -5], [1, 8, -5], [1, 0, 0], [2, 4, 5], [2, -8, 5], [2, 0, -5], [2, 8, -5], [2, -1, 0]],
+    build() {
+      outdoorsBase({ paved: this.paved, city: true });
+      // entrance canopy
+      boxMesh(0, 3.0, 10.4, 6.4, 0.14, 2.6, MAT.black); for (const x of [-3, 3]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2.95, 12), MAT.chrome); p.position.set(x, 1.5, 11.5); world.add(p); }
+      for (const x of [-8, 8]) { solid(x, 0, 11.2, 1.6, 0.5, 0.8, MAT.stone, 'prop', false); tree(x, 11.2, 0.45, rng(x + 9), false); }
+      // switchback stairs: 1F->2F along +x at z=-8, 2F->3F back along -x at z=-6.6
+      const guestRoom = (cx, cz, flip) => {
+        const s2 = flip ? -1 : 1;
+        F('bed', cx + 1.0, cz + s2 * 2.3, flip ? 0 : Math.PI); F('nightstand', cx - 0.3, cz + s2 * 3.0, flip ? 0 : Math.PI); F('nightstand', cx + 2.3, cz + s2 * 3.0, flip ? 0 : Math.PI);
+        F('wardrobe', cx - 3.45, cz - s2 * 1.6, Math.PI / 2); F('armchair2', cx + 3.0, cz - s2 * 2.0, -Math.PI / 2); tv(cx + 2.4, cz - s2 * 3.0, flip ? Math.PI : 0);
+        vanity(cx - 3.3, cz + s2 * 2.6, Math.PI / 2); toilet(cx - 2.2, cz + s2 * 3.3, flip ? 0 : Math.PI); rug(cx + 1, cz, 2.4, 1.8, 0x58463a);
+      };
+      onFloor(0, () => {
+        floorPlane(-11.85, 11.85, -8.85, 8.85, MAT.wood, 0.01); floorPlane(1.1, 11.85, -8.85, -3.1, MAT.tiles, 0.012); floorPlane(-3.9, 5.9, 1.1, 8.85, MAT.tiles, 0.012);
+        shell(-12, 12, -9, 9, { matOut: MAT.stone, matIn: MAT.plaster, s: [Wn(-10, false, 2.0), Wn(-6.5, true, 2.0), D(0.5, false, 2.4), Wn(4, false, 1.6), Wn(8, true, 2.0), Wn(10.8, false, 1.4)], n: [D(6, true), Wn(-9), Wn(-1)], w: [Wn(5), D(-5, true)], e: [Wn(5, true), Wn(-6), D(1, true)] });
+        softWall({ axis: 'z', at: -4, from: 1.08, to: 8.85, openings: [iD(5, 1.6)] });
+        softWall({ axis: 'x', at: 1, from: -11.85, to: 5.92, openings: [iD(-8), iD(-1.5, 1.6)] });
+        softWall({ axis: 'z', at: 6, from: -2.92, to: 8.85, openings: [iD(3, 1.6), iD(7.5)] });
+        softWall({ axis: 'x', at: -3, from: 1.08, to: 11.85, openings: [iD(4), iD(9, 1.2, true)] });
+        softWall({ axis: 'z', at: 1, from: -8.85, to: -3.08, openings: [iD(-6)] });
+        softWall({ axis: 'z', at: -4, from: -8.85, to: 0.92, openings: [iD(-2)] });
+        // lobby
+        counter(-1.5, 3.5, 1.6, 2.3, MAT.darkWood); F('sofa3', 4.8, 6.5, -Math.PI / 2); F('armchair', 2.4, 7.8, Math.PI); F('coffeeRound', 3.2, 6.4); F('plant', -3.4, 8.4); F('plant', 5.4, 8.4); rug(2, 6, 4, 3, 0x3b2c4a); F('clock', -3.5, 2.0, Math.PI / 2);
+        // restaurant
+        for (const [x, z] of [[-10, 3], [-7, 3], [-10, 6.5], [-7, 6.5]]) { F('table2', x, z); F('chair', x - 0.5, z - 0.7, 0); F('chair', x + 0.5, z + 0.7, Math.PI); }
+        // bar (site A)
+        counter(8, 11.85, -0.2, 0.5, MAT.darkWood); counter(11.2, 11.85, -2.85, -0.2, MAT.darkWood); F('shelfW', 9.4, -2.75); F('shelfW', 10.6, -2.75);
+        for (const x of [8.5, 9.4, 10.3, 11.2]) F('barStool', x, 1.1); F('table', 8.6, 5.5); F('armchair2', 10.8, 4.0, -Math.PI / 2); F('armchair2', 10.8, 6.0, -Math.PI / 2); poolTable(8.2, 7.8);
+        deployShield(7.2, 2.6, Math.PI / 2); deployShield(9.6, 3.0, 0);
+        // kitchen + service
+        counter(1.2, 11.85, -8.85, -8.2); counter(4, 9, -6.2, -5.4, MAT.steel); F('stove', 2.0, -8.5); F('stove', 9.8, -8.5); fridge(11.4, -4.0, -Math.PI / 2); fridge(11.4, -5.0, -Math.PI / 2);
+        F('crate', -3.2, -8.3); F('crate', -1.9, -8.3); F('crate', -3.2, -7.1, 0.4); F('barrel', 0.2, -8.3); F('rack', -0.2, -5.0, -Math.PI / 2);
+        STAIR_HOLES.push(stairs(-11.0, -8.0, '+x', 1.1));
+        F('plant', -11.4, 0.4); vending(-5.2, 0.4, Math.PI);
+        ceilLight(1, 5, 0xfff0d8, 50, true, true); ceilLight(-8, 5, 0xffd6a0, 46, false); ceilLight(9, 4, 0xffc890, 48, true); ceilLight(6, -6, 0xeef4ff, 46, false, true); ceilLight(-8, -4, 0xfff0dc, 36); ceilLight(-1.5, -4, 0xfff0dc, 30);
+        slab(-12.15, 12.15, -9.15, 9.15, STAIR_HOLES.splice(0), MAT.carpet, MAT.plaster);
+      });
+      for (const k of [1, 2]) onFloor(k, () => {
+        shell(-12, 12, -9, 9, { matOut: MAT.plasterOut, matIn: MAT.plaster, s: [Wn(-9.5), Wn(-6, true), Wn(-1.5), Wn(1.5, true), Wn(6.5), Wn(10, true)], n: [Wn(-1), Wn(2.5, true), Wn(6), Wn(10)], w: [Wn(4.5), Wn(-4, true)], e: [Wn(5, true), Wn(-5)] });
+        softWall({ axis: 'x', at: -1.5, from: -11.85, to: 11.85, openings: [iD(-6, 2.6), iD(0), iD(8)] });
+        softWall({ axis: 'x', at: 1.5, from: -11.85, to: 11.85, openings: k === 1 ? [iD(-8), iD(0), iD(8)] : [iD(-8), iD(2, 1.6), iD(9, 1.2, true)] });
+        softWall({ axis: 'z', at: -4, from: -8.85, to: -1.58 }); softWall({ axis: 'z', at: 4, from: -8.85, to: -1.58 });
+        softWall({ axis: 'z', at: -4, from: 1.58, to: 8.85 }); if (k === 1) softWall({ axis: 'z', at: 4, from: 1.58, to: 8.85 });
+        if (k === 1) {
+          STAIR_HOLES.push(stairs(-5.0, -3.5, '-x', 1.1));
+          railing(-11.05, -7.35, -7.5, -7.35);
+          guestRoom(-8, 5.3, false); guestRoom(0, 5.3, false); guestRoom(8, 5.3, false); guestRoom(0, -5.3, true); guestRoom(8, -5.3, true);
+          ceilLight(-8, 5, 0xffe2c0, 40); ceilLight(0, 5, 0xffe2c0, 40); ceilLight(8, 5, 0xffe2c0, 40, true); ceilLight(0, -5, 0xffe2c0, 40); ceilLight(8, -5, 0xffe2c0, 40); ceilLight(-3, 0, 0xfff0dc, 30); ceilLight(6, 0, 0xfff0dc, 30); ceilLight(-9, -4, 0xfff0dc, 32);
+          slab(-12.15, 12.15, -9.15, 9.15, STAIR_HOLES.splice(0), MAT.carpet, MAT.plaster);
+        } else {
+          railing(-8.9, -2.85, -5.0, -2.85); railing(-8.9, -4.15, -5.0, -4.15); railing(-4.95, -4.15, -4.95, -2.85);
+          guestRoom(-8, 5.3, false); guestRoom(8, -5.3, true);
+          // penthouse (site B)
+          F('bed', 9.6, 7.6, Math.PI); F('nightstand', 7.8, 8.5, Math.PI); F('nightstand', 11.4, 8.5, Math.PI); F('sofa', 2.6, 6.6, Math.PI); F('coffee', 2.6, 5.1); F('armchair', 0.2, 3.4, Math.PI / 2); F('armchair', 5.0, 3.4, -Math.PI / 2);
+          counter(-3.85, -3.2, 3.0, 7.0, MAT.darkWood); F('barStool', -2.5, 4.0); F('barStool', -2.5, 5.2); F('dining', 5.6, 8.0, 0); F('chair', 4.8, 7.2, 0); F('chair', 6.4, 7.2, 0); tv(9.8, 2.3, 0); rug(2.6, 5.6, 4.6, 3.2, 0x2a2420); F('plant', 11.4, 2.2); F('clock', -3.5, 8.6, Math.PI / 2);
+          deployShield(6, 2.8, 0); deployShield(10.2, 4.4, 0);
+          // office
+          F('desk', 0, -7.8, Math.PI); F('schoolChair', 0, -7.0); F('bookshelf', -3.55, -5.5, Math.PI / 2); F('cabinet', 3.35, -3.0, -Math.PI / 2);
+          ceilLight(3, 5.5, 0xffe2c0, 52, true); ceilLight(9.5, 6, 0xffe2c0, 44); ceilLight(-8, 5, 0xffe2c0, 40); ceilLight(0, -5, 0xfff0dc, 40); ceilLight(8, -5, 0xffe2c0, 40); ceilLight(0, 0, 0xfff0dc, 30); ceilLight(-9, -4, 0xfff0dc, 32);
+          flatRoof(-12, 12, -9, 9, MAT.stone);
+        }
+      });
+    },
+  },
+});
 const STAIR_HOLES = [];
-const MAP_ORDER = ['kestrel', 'harbor', 'lodge'];
+const MAP_ORDER = ['kestrel', 'harbor', 'lodge', 'bank', 'hotel'];
+const randomMap = (not) => { const l = MAP_ORDER.filter(k => k !== not && MAPS[k]); return l[Math.random() * l.length | 0]; };
 // static batching: the map is thousands of small meshes; merge everything that never changes into
 // spatial chunks per material so each frame (and each shadow / AO pass) issues far fewer draw calls
 function mergeStatic() {
@@ -3436,8 +3622,8 @@ function gunMats(color) {
   if (gunMatCache[key]) return gunMatCache[key];
   const T = gunTextures(), V2 = (a) => new THREE.Vector2(a, a), DS = THREE.DoubleSide;
   return (gunMatCache[key] = {
-    metal: new THREE.MeshStandardMaterial({ color: 0x2a2c2f, metalness: 0.8, roughness: 0.9, roughnessMap: T.wear, normalMap: T.stip, normalScale: V2(0.12), envMapIntensity: 1.0, side: DS }),
-    poly: new THREE.MeshStandardMaterial({ color: color || 0x26282b, metalness: 0.05, roughness: 0.78, normalMap: T.stip, normalScale: V2(0.35), envMapIntensity: 0.55, side: DS }),
+    metal: new THREE.MeshStandardMaterial({ color: 0x24262a, metalness: 0.62, roughness: 0.66, roughnessMap: T.wear, normalMap: T.stip, normalScale: V2(0.12), envMapIntensity: 1.0, side: DS }),
+    poly: new THREE.MeshStandardMaterial({ color: color || 0x26282b, metalness: 0.05, roughness: 0.7, normalMap: T.stip, normalScale: V2(0.35), envMapIntensity: 0.55, side: DS }),
     grip: new THREE.MeshStandardMaterial({ color: 0x18191b, metalness: 0.05, roughness: 0.93, normalMap: T.stip, normalScale: V2(1.3), envMapIntensity: 0.4, side: DS }),
     bronze: new THREE.MeshStandardMaterial({ color: 0x5e4a38, metalness: 0.55, roughness: 0.62, roughnessMap: T.wear, normalMap: T.stip, normalScale: V2(0.15), envMapIntensity: 0.9, side: DS }),
     dark: new THREE.MeshStandardMaterial({ color: 0x101113, metalness: 0.5, roughness: 0.55, envMapIntensity: 0.6, side: DS }),
@@ -3465,7 +3651,7 @@ function pShape(pts, r = 0, holes = []) {
 }
 function gmesh(parent, geo, mat) { const m = new THREE.Mesh(geo, mat); m.castShadow = true; m.receiveShadow = true; parent.add(m); return m; }
 // side profile [forward, up] extruded across the gun's width
-function side(parent, pts, width, mat, { r = 0.002, holes = [], bevel = 0.0012, xo = 0 } = {}) {
+function side(parent, pts, width, mat, { r = 0.002, holes = [], bevel = 0.0016, xo = 0 } = {}) {
   const b = Math.min(bevel, width * 0.3), depth = Math.max(0.0004, width - 2 * b);
   const geo = new THREE.ExtrudeGeometry(pShape(pts, r, holes), { depth, bevelEnabled: b > 0, bevelThickness: b, bevelSize: b, bevelSegments: 2, curveSegments: 6 });
   geo.translate(0, 0, -depth / 2); geo.rotateY(Math.PI / 2);
@@ -3499,9 +3685,12 @@ function triggerGroup(g, M, f = 0) {
 function gunOptic(g, M, kind, f, opts) {
   let sightH = 0.0985, retZ = -(f + 0.03);
   if (kind === 'holo') {
-    side(g, [[f - 0.035, 0.054], [f + 0.05, 0.054], [f + 0.05, 0.068], [f - 0.035, 0.068]], 0.034, M.dark, { r: 0.003 });
-    gbox(g, 0.03, 0.022, 0.03, M.dark, f - 0.018, 0.078);           // battery housing (EOTech style)
-    frontP(g, [[-0.025, 0.066], [0.025, 0.066], [0.025, 0.131], [-0.025, 0.131]], f - 0.005, f + 0.05, M.dark, { r: 0.006, holes: [[[-0.0185, 0.075], [0.0185, 0.075], [0.0185, 0.123], [-0.0185, 0.123]]] });
+    // EOTech-style holographic sight: low body, angled hood with a wide window, rear buttons, QD lever
+    side(g, [[f - 0.045, 0.054], [f + 0.052, 0.054], [f + 0.052, 0.071], [f + 0.03, 0.08], [f - 0.03, 0.08], [f - 0.045, 0.072]], 0.04, M.dark, { r: 0.004, bevel: 0.0025 });
+    frontP(g, [[-0.026, 0.07], [0.026, 0.07], [0.026, 0.104], [0.019, 0.121], [-0.019, 0.121], [-0.026, 0.104]], f - 0.004, f + 0.05, M.dark, { r: 0.004, bevel: 0.0018, holes: [[[-0.0165, 0.0855], [-0.0165, 0.1125], [0.0165, 0.1125], [0.0165, 0.0855]]] });
+    for (const dz of [-0.008, 0.008]) { const b = gmesh(g, new THREE.CylinderGeometry(0.004, 0.004, 0.004, 14), M.grip); b.rotation.z = Math.PI / 2; b.position.set(-0.0215, 0.064, -(f - 0.03 + dz)); }
+    gbox(g, 0.005, 0.012, 0.03, M.metal, f + 0.005, 0.06, 0.022);                                   // QD lever
+    turned(g, [[0, f + 0.02], [0.0085, f + 0.02], [0.0085, f + 0.045], [0, f + 0.045]], M.dark, 0.066, 0.026);   // battery cap (sideways)
     sightH = 0.099; retZ = -(f + 0.03);
   } else if (kind === 'reddot') {
     side(g, [[f - 0.03, 0.054], [f + 0.03, 0.054], [f + 0.025, 0.074], [f - 0.025, 0.074]], 0.026, M.dark, { r: 0.003 });
@@ -3598,8 +3787,9 @@ function buildGunModel(wKey, color, opts = {}) {
   g.add(mag);
   const hg = w.hg || 0.2, bl = w.barrel || 0.15;
   const muzzleDevice = (f1, y, rad = 0.0135) => {
-    turned(g, [[0, f1 - 0.045], [rad - 0.0015, f1 - 0.045], [rad, f1 - 0.03], [rad, f1 + 0.004], [rad - 0.003, f1 + 0.01], [0, f1 + 0.01]], M.dark, y);
-    if (!tp) for (let k = 0; k < 3; k++) gbox(g, rad * 2.05, 0.0035, 0.005, M.metal, f1 - 0.022 + k * 0.009, y + rad * 0.55);
+    turned(g, [[0, f1 - 0.05], [rad - 0.003, f1 - 0.05], [rad - 0.003, f1 - 0.042], [rad, f1 - 0.038], [rad, f1 + 0.004], [rad - 0.0025, f1 + 0.01], [0.0055, f1 + 0.01], [0.0055, f1 - 0.02], [0, f1 - 0.02]], M.dark, y, 0, 28);
+    if (!tp) { const slot = new THREE.BoxGeometry(0.0034, 0.004, 0.026), black = new THREE.MeshBasicMaterial({ color: 0x050505 });     // A2 birdcage: open ports, closed bottom
+      for (const a of [Math.PI / 2, Math.PI / 2 + 1.25, Math.PI / 2 - 1.25, Math.PI / 2 + 2.3, Math.PI / 2 - 2.3]) { const m = gmesh(g, slot, black); m.position.set(Math.cos(a) * (rad - 0.0012), y + Math.sin(a) * (rad - 0.0012), -(f1 - 0.014)); m.rotation.z = a; } }
     return f1 + 0.012;
   };
   if (wKey === 'shotgun') {
@@ -3677,7 +3867,17 @@ function buildGunModel(wKey, color, opts = {}) {
     side(g, [[-0.39, 0.052], [-0.402, 0.052], [-0.402, -0.097], [-0.39, -0.097]], 0.042, M.grip, { r: 0.004 });
     const h0 = 0.15, h1 = 0.15 + hg, slots = [];
     for (let f = h0 + 0.02; f + 0.03 < h1 - 0.01; f += 0.042) { slots.push([[f, 0.006], [f + 0.03, 0.006], [f + 0.03, 0.018], [f, 0.018]]); slots.push([[f, -0.017], [f + 0.03, -0.017], [f + 0.03, -0.006], [f, -0.006]]); }
-    side(g, [[h0, -0.026], [h1, -0.026], [h1, 0.047], [h0, 0.047]], 0.046, dmr ? M.dark : M.bronze, { r: 0.006, holes: slots });
+    // octagonal free-float handguard with M-LOK slots on the sides and lower bevels
+    { const oct = [[-0.013, -0.026], [0.013, -0.026], [0.023, -0.015], [0.023, 0.037], [0.014, 0.047], [-0.014, 0.047], [-0.023, 0.037], [-0.023, -0.015]], bore = [];
+      for (let k = 19; k >= 0; k--) { const a = k / 20 * Math.PI * 2; bore.push([Math.cos(a) * 0.0155, 0.0105 + Math.sin(a) * 0.0155]); }
+      frontP(g, oct, h0, h1, dmr ? M.dark : M.bronze, { r: 0.004, holes: [bore], bevel: 0.0012 });
+      if (!tp) { const slotG = new RoundedBoxGeometry(0.003, 0.0075, 0.032, 2, 0.0014);
+        for (let f = h0 + 0.022; f + 0.034 < h1; f += 0.045) for (const sx of [-1, 1]) {
+          for (const yy of [0.001, 0.023]) { const sl = gmesh(g, slotG, M.dark); sl.position.set(sx * 0.0225, yy, -(f + 0.016)); }
+          const sl2 = gmesh(g, slotG, M.dark); sl2.position.set(sx * 0.0176, -0.0207, -(f + 0.016)); sl2.rotation.z = -sx * Math.PI / 4;
+        }
+        turned(g, [[0, h1 + 0.001], [0.011, h1 + 0.001], [0.011, h1 + 0.02], [0, h1 + 0.02]], M.metal, 0.0105);   // gas block peeking out
+      } }
     side(g, [[-0.14, 0.047], [h1, 0.047], [h1, 0.054], [-0.14, 0.054]], 0.021, M.dark, { r: 0.001 }); if (!tp) railTeeth(g, -0.13, h1 - 0.005, 0.054, M.dark);
     turned(g, [[0, h1 - 0.02], [0.0085, h1 - 0.02], [0.0085, h1 + bl - 0.04], [0, h1 + bl - 0.04]], M.metal, boreY);
     muzzleF = muzzleDevice(h1 + bl, boreY);
@@ -3766,17 +3966,8 @@ function buildWeaponVM(op, wKey) {
   const f3 = f2.clone(); f3.rotation.set(0, Math.PI / 2, Math.PI / 2); flash.add(f3);
   flash.visible = false;
   // arms
-  const GM = gloveMats(op), sleeve = GM.sleeve, glove = GM.glove;
-  const lz = -0.17 - w.hg * 0.55;
-  // firing hand wraps the pistol grip; support hand cups the handguard from below-left
-  const handR = gloveHand(root, GM, V3(0, -0.078, 0.082), V3(0, -0.78, 0.62), V3(1, 0, 0), V3(0, -0.618, -0.786), 0.031, 3.4, 1.5);
-  const handL = gloveHand(root, GM, V3(0, 0.008, lz), V3(0, 0, -1), V3(-0.5, -0.87, 0), V3(0.87, -0.5, 0), 0.041, 2.05, 1.7);
-  const elbowR = V3(0.1, -0.2, 0.22), shR = V3(0.15, -0.36, 0.32), elbowL = V3(-0.11, -0.17, lz + 0.22), shL = V3(-0.16, -0.36, 0.24);
-  limb(root, handR, elbowR, 0.034, sleeve); limb(root, elbowR, shR, 0.046, sleeve);
-  limb(root, handL, elbowL, 0.034, sleeve); limb(root, elbowL, shL, 0.046, sleeve);
-  for (const [h, e] of [[handR, elbowR], [handL, elbowL]]) { const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.037, 0.039, 0.035, 20), glove); cuff.position.copy(h).lerp(e, 0.12); cuff.quaternion.setFromUnitVectors(V3(0, 1, 0), V3().subVectors(e, h).normalize()); root.add(cuff); }
-  const watch = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.012, 0.03), new THREE.MeshStandardMaterial({ color: 0x0c0d0e, roughness: 0.4, metalness: 0.3 }));
-  watch.position.copy(handL).lerp(elbowL, 0.28).add(V3(0, 0.03, 0)); root.add(watch);
+  const GM = gloveMats(op);
+  buildVmHands(root, GM, wKey, w, false, pump);
   root.traverse(o => { if (o.isMesh) { o.frustumCulled = false; } });
   vmRoot.add(root);
   return { root, gun, mag, pump, muzzle, flash, sightH, retPos, w, magHome: mag ? mag.position.clone() : null, pumpHome: pump ? pump.position.clone() : null };
@@ -3817,6 +4008,120 @@ function gloveHand(root, GM, c, A, R, Bd, r, sweep, thumbSweep, list) {
   tube(tp, 0.0098, GM.glove);
   return P(th0, 0.006, r + 0.03);       // wrist position for the forearm
 }
+
+// ---------------- first-person hands: lofted, jointed fingers wrapped around the real grip surfaces ----------------
+function vmTube(rings, segs = 14, caps = [true, true]) {
+  const pos = [], uv = [], idx = [], n = rings.length;
+  rings.forEach((R, i) => {
+    for (let k = 0; k < segs; k++) {
+      const th = k / segs * Math.PI * 2, c = Math.cos(th), sn = Math.sin(th), e = 2 / (R.p || 2);
+      const x = Math.sign(c) * Math.pow(Math.abs(c), e) * R.a, y = Math.sign(sn) * Math.pow(Math.abs(sn), e) * R.b;
+      pos.push(R.c.x + R.side.x * x + R.front.x * y, R.c.y + R.side.y * x + R.front.y * y, R.c.z + R.side.z * x + R.front.z * y);
+      uv.push(k / segs, i / 6);
+    }
+  });
+  for (let i = 0; i < n - 1; i++) for (let k = 0; k < segs; k++) { const a = i * segs + k, b = i * segs + (k + 1) % segs; idx.push(a, b, a + segs, b, b + segs, a + segs); }
+  const cap = (i, flip) => { const c = rings[i].c, ci = pos.length / 3; pos.push(c.x, c.y, c.z); uv.push(0.5, 0.5); for (let k = 0; k < segs; k++) { const a = i * segs + k, b = i * segs + (k + 1) % segs; if (flip) idx.push(ci, b, a); else idx.push(ci, a, b); } };
+  if (caps[0]) cap(0, true); if (caps[1]) cap(n - 1, false);
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals(); return g;
+}
+// rings along a polyline; widths from rf(u) -> [a, b]; 'hint' fixes the cross-section orientation; rounded tip
+function vmRings(pts, rf, hint, tip = true) {
+  const curve = new THREE.CatmullRomCurve3(pts), N = Math.max(8, Math.round(curve.getLength() / 0.004)), rings = [];
+  for (let i = 0; i <= N; i++) {
+    const u = i / N, c = curve.getPointAt(u), t = curve.getTangentAt(u);
+    const side = hint.clone().addScaledVector(t, -hint.dot(t)); if (side.lengthSq() < 1e-6) side.set(1, 0, 0); side.normalize();
+    const front = V3().crossVectors(t, side).normalize(), [a, b] = rf(u);
+    rings.push({ c, side, front, a, b });
+  }
+  if (tip) { const L = rings[rings.length - 1], t = curve.getTangentAt(1); for (const k of [0.45, 0.75, 0.93, 1]) { const q = Math.sqrt(Math.max(0, 1 - k * k)) || 0.12; rings.push({ c: L.c.clone().addScaledVector(t, L.b * k * 0.9), side: L.side, front: L.front, a: L.a * q, b: L.b * q }); } }
+  return rings;
+}
+// a frame wrapped around a grip / handguard: W(theta, s, extra) on an elliptical cylinder
+function wrapFrame(C0, d, e1, rx, rz) {
+  d = d.clone().normalize(); e1 = e1.clone().addScaledVector(d, -e1.dot(d)).normalize(); const e2 = V3().crossVectors(e1, d).normalize();
+  return { d, e1, e2, rx, rz, W: (th, s, ex = 0) => C0.clone().addScaledVector(d, s).addScaledVector(e1, Math.cos(th) * (rx + ex)).addScaledVector(e2, Math.sin(th) * (rz + ex)) };
+}
+function vmHand(parent, GM, H) {
+  const F = H.frame, add = (g, m) => { const o = new THREE.Mesh(g, m); o.castShadow = true; parent.add(o); return o; };
+  const Reff = (F.rx + F.rz) / 2;
+  // fingers wrapped around the surface, three phalanges with knuckle swelling
+  for (const f of H.fingers) {
+    const ex = f.r + 0.0012, pts = [];
+    for (let L = -0.016; L <= f.len + 1e-6; L += 0.006) pts.push(F.W(f.th0 + f.dir * Math.max(L, -0.004) / (Reff + ex), f.s, ex + Math.max(0, -L) * 0.7));
+    add(vmTube(vmRings(pts, u => { const j = 1 + 0.07 * Math.exp(-(((u - 0.47) / 0.05) ** 2)) + 0.06 * Math.exp(-(((u - 0.75) / 0.045) ** 2)); const r = f.r * (1 - 0.2 * u) * j; return [r * 1.06, r * 0.92]; }, F.d)), GM.glove);
+  }
+  // trigger finger / thumb follow explicit paths
+  for (const [pts, r0, r1] of [[H.index, 0.0088, 0.0072], [H.thumb, 0.0108, 0.0088]]) if (pts) add(vmTube(vmRings(pts, u => { const r = r0 + (r1 - r0) * u, j = 1 + 0.06 * Math.exp(-(((u - 0.5) / 0.08) ** 2)); return [r * 1.05 * j, r * 0.93 * j]; }, F.d)), GM.glove);
+  // palm: curved slab hugging the grip from the heel to the knuckle line
+  const P = H.palm, rings = [], n = 9;
+  for (let i = 0; i <= n; i++) {
+    const u = i / n, th = P.th0 + (P.th1 - P.th0) * u, c = F.W(th, P.sMid, 0.0125 + 0.004 * Math.sin(u * Math.PI));
+    const t = F.W(th + 0.01 * Math.sign(P.th1 - P.th0), P.sMid, 0.0125).sub(F.W(th, P.sMid, 0.0125)).normalize();
+    const side = F.d.clone().addScaledVector(t, -F.d.dot(t)).normalize(), front = V3().crossVectors(t, side).normalize();
+    rings.push({ c, side, front, a: P.half * (0.8 + 0.2 * Math.sin(Math.min(1, u * 1.4) * Math.PI / 2)), b: 0.0125, p: 2.6 });
+  }
+  { const L = rings[0], hw = H.wrist.clone(); rings.unshift({ c: L.c.clone().lerp(hw, 0.55), side: L.side, front: L.front, a: P.half * 0.72, b: 0.016, p: 2.4 }); }
+  add(vmTube(rings, 18), GM.glove);
+  // knuckle guard across the back of the hand
+  { const th = P.th1 - 0.22 * Math.sign(P.th1 - P.th0), c = F.W(th, P.sMid, 0.027), rad = F.W(th, P.sMid, 0.04).sub(F.W(th, P.sMid, 0.0)).normalize(), tan = V3().crossVectors(rad, F.d).normalize();
+    const pads = H.fingers.map(f => f.s).concat(H.index ? [H.fingers[0].s - 0.021] : []);
+    for (const ps of pads) { const pc = F.W(th, ps, 0.0255), m = add(new RoundedBoxGeometry(0.017, 0.0055, 0.019, 3, 0.0026), GM.knuckle); m.matrixAutoUpdate = false; m.matrix.makeBasis(F.d, rad, tan).setPosition(pc); } }
+  // wrist strap
+  { const dir = V3().subVectors(H.elbow, H.wrist).normalize(), m = add(new THREE.CylinderGeometry(0.0315, 0.0305, 0.026, 24, 1, true), GM.knuckle); m.material = GM.knuckle.clone(); m.material.side = THREE.DoubleSide; m.position.copy(H.wrist).addScaledVector(dir, 0.012); m.quaternion.setFromUnitVectors(V3(0, 1, 0), dir); }
+}
+function vmArm(parent, GM, wrist, elbow, shoulder) {
+  const rf = u => { const r = u < 0.5 ? 0.029 + (0.039 - 0.029) * (u / 0.5) : 0.039 + (0.047 - 0.039) * ((u - 0.5) / 0.5); return [r, r * 0.92]; };
+  const pts = [wrist.clone().lerp(elbow, -0.04), wrist.clone().lerp(elbow, 0.5), elbow, elbow.clone().lerp(shoulder, 0.5), shoulder];
+  const m = new THREE.Mesh(vmTube(vmRings(pts, rf, V3(0, 1, 0), false), 20), GM.sleeve); m.castShadow = true; parent.add(m);
+}
+// hand poses per weapon family (gun coordinates: +x right, +y up, -z forward)
+function vmGripFrame(pistol) {
+  return pistol ? wrapFrame(V3(0, -0.02, 0.04), V3(0, -0.09, 0.012), V3(1, 0, 0), 0.0145, 0.0245) : wrapFrame(V3(0, -0.028, 0.068), V3(0, -0.105, 0.031), V3(1, 0, 0), 0.0155, 0.021);
+}
+function vmSupportFrame(wKey, w) {
+  const hg = w.hg || 0.2;
+  if (wKey === 'smg') return wrapFrame(V3(0, -0.003, -0.205), V3(0, 0, -1), V3(-1, 0, 0), 0.024, 0.028);
+  if (wKey === 'pdw') return wrapFrame(V3(0, 0.01, -0.165), V3(0, 0, -1), V3(-1, 0, 0), 0.026, 0.04);
+  if (wKey === 'shotgun') return wrapFrame(V3(0, -0.008, -0.3), V3(0, 0, -1), V3(-1, 0, 0), 0.025, 0.025);
+  if (wKey === 'bullpup') return wrapFrame(V3(0, 0.008, -(0.17 + hg - 0.05)), V3(0, 0, -1), V3(-1, 0, 0), 0.024, 0.036);
+  return wrapFrame(V3(0, 0.0105, -(0.15 + hg - 0.05)), V3(0, 0, -1), V3(-1, 0, 0), 0.023, 0.0365);
+}
+function buildVmHands(root, GM, wKey, w, pistol, pumpGroup) {
+  const R = vmGripFrame(pistol);
+  const rFingers = pistol
+    ? [{ s: 0.03, r: 0.0088, len: 0.082 }, { s: 0.049, r: 0.0084, len: 0.078 }, { s: 0.066, r: 0.0074, len: 0.062 }]
+    : [{ s: 0.036, r: 0.0088, len: 0.086 }, { s: 0.057, r: 0.0084, len: 0.08 }, { s: 0.077, r: 0.0074, len: 0.064 }];
+  const right = {
+    frame: R, fingers: rFingers.map(f => ({ ...f, th0: 0.3, dir: 1 })),
+    index: pistol ? [R.W(0.25, 0.008, 0.0105), V3(0.012, -0.028, 0.018), V3(0.006, -0.029, -0.005), V3(0.001, -0.031, -0.014)]
+                  : [R.W(0.25, 0.012, 0.0105), V3(0.019, -0.037, 0.042), V3(0.009, -0.035, 0.02), V3(0.003, -0.038, 0.01)],
+    thumb: pistol ? [R.W(-1.1, 0.012, 0.012), V3(0.008, -0.012, 0.075), V3(-0.012, -0.01, 0.062), V3(-0.02, -0.011, 0.03), V3(-0.021, -0.012, 0.004)]
+                  : [R.W(-1.1, 0.02, 0.012), V3(0.012, -0.024, 0.1), V3(-0.012, -0.02, 0.097), V3(-0.022, -0.018, 0.075), V3(-0.024, -0.016, 0.05)],
+    palm: { th0: -1.45, th1: 0.32, sMid: pistol ? 0.04 : 0.045, half: pistol ? 0.04 : 0.045 },
+    wrist: R.W(-1.8, pistol ? 0.055 : 0.06, 0.03), elbow: pistol ? V3(0.08, -0.2, 0.24) : V3(0.1, -0.2, 0.22),
+  };
+  vmHand(root, GM, right);
+  let left;
+  if (pistol) {
+    const L = wrapFrame(V3(0, -0.02, 0.04), V3(0, -0.09, 0.012), V3(1, 0, 0), 0.0345, 0.0445);
+    left = { frame: L, fingers: [{ s: 0.03, r: 0.0088, len: 0.08 }, { s: 0.048, r: 0.0086, len: 0.084 }, { s: 0.065, r: 0.0082, len: 0.078 }, { s: 0.081, r: 0.0072, len: 0.062 }].map(f => ({ ...f, th0: 2.6, dir: -1 })),
+      thumb: [L.W(2.95, 0.006, 0.01), V3(-0.026, -0.013, 0.03), V3(-0.025, -0.013, 0.008), V3(-0.024, -0.012, -0.006)],
+      palm: { th0: 4.0, th1: 2.62, sMid: 0.055, half: 0.04 }, wrist: L.W(4.2, 0.06, 0.03), elbow: V3(-0.1, -0.21, 0.22) };
+  } else {
+    const L = vmSupportFrame(wKey, w);
+    left = { frame: L, fingers: [{ s: 0.03, r: 0.0088, len: 0.078 }, { s: 0.009, r: 0.009, len: 0.084 }, { s: -0.012, r: 0.0086, len: 0.078 }, { s: -0.031, r: 0.0075, len: 0.064 }].map(f => ({ ...f, th0: 1.25, dir: 1 })),
+      thumb: [L.W(-0.45, -0.022, 0.012), L.W(-0.7, 0.012, 0.0095), L.W(-0.82, 0.04, 0.009), L.W(-0.86, 0.058, 0.0085)],
+      palm: { th0: -0.55, th1: 1.22, sMid: 0.0, half: 0.042 }, wrist: L.W(0.25, -0.062, 0.03), elbow: V3(-0.2, -0.27, L.W(0, 0, 0).z + 0.17) };
+  }
+  vmHand(pumpGroup || root, GM, left);
+  vmArm(root, GM, right.wrist, right.elbow, pistol ? V3(0.15, -0.38, 0.34) : V3(0.15, -0.36, 0.32));
+  vmArm(root, GM, left.wrist, left.elbow, pistol ? V3(-0.17, -0.38, 0.3) : V3(-0.2, -0.42, 0.2));
+  // wristwatch on the support arm
+  const wd = V3().subVectors(left.elbow, left.wrist).normalize(), wp = left.wrist.clone().addScaledVector(wd, 0.045);
+  const watch = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.008, 20), new THREE.MeshStandardMaterial({ color: 0x0c0d0e, roughness: 0.35, metalness: 0.4 }));
+  const up = V3(0, 1, 0).addScaledVector(wd, -wd.y).normalize(); watch.position.copy(wp).addScaledVector(up, 0.03); watch.quaternion.setFromUnitVectors(V3(0, 1, 0), up); root.add(watch);
+}
 function vmFlash(gun, pos, size) {
   const fmat = new THREE.MeshBasicMaterial({ map: flashTex, color: new THREE.Color(6, 4, 2.2), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
   const flash = new THREE.Group(); flash.position.copy(pos); gun.add(flash);
@@ -3828,13 +4133,8 @@ function finishPistolVM(op, w, root, gun, metal, poly, dark) {
   const pk = buildPistol(w, gun);
   const muzzle = new THREE.Object3D(); muzzle.position.set(0, pk.muzzleY, pk.muzzleZ); gun.add(muzzle);
   const flash = vmFlash(gun, muzzle.position, 0.7);
-  const GM = gloveMats(op), sleeve = GM.sleeve;
-  // two-handed grip: right hand on the frame, left hand wrapped over its fingers
-  const handR = gloveHand(root, GM, V3(0, -0.062, 0.05), V3(0, -0.93, 0.37), V3(1, 0, 0), V3(0, -0.37, -0.93), 0.027, 3.3, 1.4);
-  const handL = gloveHand(root, GM, V3(-0.004, -0.072, 0.03), V3(0, -0.93, 0.37), V3(-1, 0, 0), V3(0, -0.37, -0.93), 0.044, 2.6, 1.2);
-  const elbowR = V3(0.08, -0.2, 0.24), shR = V3(0.15, -0.38, 0.34), elbowL = V3(-0.1, -0.21, 0.22), shL = V3(-0.17, -0.38, 0.3);
-  limb(root, handR, elbowR, 0.034, sleeve); limb(root, elbowR, shR, 0.046, sleeve);
-  limb(root, handL, elbowL, 0.034, sleeve); limb(root, elbowL, shL, 0.046, sleeve);
+  const GM = gloveMats(op);
+  buildVmHands(root, GM, 'pistol', w, true, null);
   root.traverse(o => { if (o.isMesh) o.frustumCulled = false; });
   vmRoot.add(root);
   return { root, gun, mag: pk.mag, pump: null, slide: pk.slide, slideHome: pk.slide.position.clone(), muzzle, flash, sightH: pk.sightH, retPos: 0, w, magHome: pk.mag.position.clone(), pumpHome: null, pistol: true };
@@ -4097,11 +4397,99 @@ function switchWeapon(slot) {
   sfx.click(slot ? 1.3 : 0.9); updateHudStatic();
 }
 function playerEye() { return lerp(1.62, 1.05, P.crouch); }
+// ---- rappelling: clip onto an exterior wall (T), climb with W/S, slide with A/D, F through an open window, Space to let go
+const ROPE = { line: null };
+function ropeVisual(on) {
+  if (!ROPE.line) {
+    const g = new THREE.CylinderGeometry(0.009, 0.009, 1, 6); g.translate(0, 0.5, 0);
+    ROPE.line = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0x2c2a26, roughness: 0.9 })); ROPE.line.castShadow = true; scene.add(ROPE.line);
+  }
+  ROPE.line.visible = on;
+}
+function wallTopAt(x, z) {
+  let top = 0; for (const c of queryBox(x - 0.06, z - 0.06, x + 0.06, z + 0.06, [])) if (c.alive !== false && c.kind !== 'bound' && c.kind !== 'prop' && c.max.y > top) top = c.max.y;
+  return top;
+}
+// is there an exterior wall right in front of the player (or a roof edge under their feet)?
+function findRappel() {
+  if (!MAP || !P.alive || G.phase === 'wait') return null;
+  const fx = -Math.sin(P.yaw), fz = -Math.cos(P.yaw), [x0, x1, z0, z1] = MAP.inside, roofY = MAP.floors * FLOOR_H;
+  if (!inHouse(P.pos)) {
+    const o = V3(P.pos.x, P.pos.y + 1.1, P.pos.z), d = V3(fx, 0, fz), h = rayWorld(o, d, 1.1, MASK_SHOT);
+    if (!h || h.axis === 1) return null;
+    const hp = V3().copy(o).addScaledVector(d, h.t + 0.2);
+    if (!inHouse(V3(hp.x, P.pos.y + 0.1, hp.z))) return null;
+    const n = V3(); n.setComponent(h.axis, d.getComponent(h.axis) > 0 ? -1 : 1);
+    const top = wallTopAt(hp.x, hp.z); if (top < P.pos.y + 2.4) return null;
+    return { n, plane: o.getComponent(h.axis) + d.getComponent(h.axis) * h.t, axis: h.axis, top };
+  }
+  if (P.onGround && P.pos.y > roofY - 0.4) {          // standing on the roof near an edge, facing out
+    const edges = [[x0, -1, 0, P.pos.x - x0], [x1, 1, 0, x1 - P.pos.x], [z0, 0, -1, P.pos.z - z0], [z1, 0, 1, z1 - P.pos.z]];
+    for (const [at, nx, nz, dist] of edges) if (dist < 1.0 && fx * nx + fz * nz > 0.5) {
+      const axis = nx ? 0 : 2, plane = at + (nx || nz) * (ET / 2 + 0.16);
+      return { n: V3(nx, 0, nz), plane: at + (nx || nz) * ET / 2, axis, top: P.pos.y, fromRoof: true, start: plane };
+    }
+  }
+  return null;
+}
+let ropeProbeT = 0, ropeProbe = null;
+function findRappelCached(dt) { ropeProbeT -= dt; if (ropeProbeT <= 0) { ropeProbeT = 0.15; ropeProbe = findRappel(); } return ropeProbe; }
+function startRappel(r) {
+  const off = 0.42, comp = r.axis;
+  P.rope = { n: r.n.clone(), axis: comp, plane: r.plane, top: r.top, anchor: V3(P.pos.x, r.top + 0.25, P.pos.z) };
+  P.pos.setComponent(comp, r.plane + r.n.getComponent(comp) * off);
+  if (r.fromRoof) { P.pos.y = r.top - 1.75; P.yaw = Math.atan2(r.n.x, r.n.z); }
+  P.rope.anchor.setComponent(comp, r.plane); P.vel.set(0, 0, 0); P.crouchT = 0; ropeVisual(true); sfx.click(0.8);
+  popup('', 'RAPPELLING · W/S CLIMB · A/D SIDE · F WINDOW · SPACE RELEASE');
+}
+function endRappel(push = 0) {
+  if (!P.rope) return;
+  if (push) { P.vel.x = P.rope.n.x * push; P.vel.z = P.rope.n.z * push; }
+  P.rope = null; ropeVisual(false);
+}
+// open window (or broken wall) at chest height in front of the rope?
+function ropeOpening() {
+  const R = P.rope, d = V3(-R.n.x, 0, -R.n.z);
+  for (const h of [0.75, 1.25]) { const o = V3(P.pos.x, P.pos.y + h, P.pos.z); if (rayWorld(o, d, 1.2, MASK_SHOT)) return false; }
+  return true;
+}
+function updateRope(dt, canMove) {
+  const R = P.rope, tx = -R.n.z, tz = R.n.x;         // along-wall tangent
+  let up = 0, side = 0;
+  if (canMove) { if (keys.KeyW) up += 1; if (keys.KeyS) up -= 1; if (keys.KeyD) side += 1; if (keys.KeyA) side -= 1; if (TOUCH.on) { up -= TOUCH.my; side += TOUCH.mx; } }
+  // A/D relative to the camera's right vector, projected onto the wall
+  const rx = Math.cos(P.yaw), rz = -Math.sin(P.yaw), sgn = Math.sign(rx * tx + rz * tz) || 1;
+  P.vel.x = tx * side * sgn * 1.4; P.vel.z = tz * side * sgn * 1.4; P.vel.y = clamp(up, -1, 1) * 2.0;
+  const want = R.plane + R.n.getComponent(R.axis) * 0.42; P.vel.setComponent(R.axis, P.vel.getComponent(R.axis) + (want - P.pos.getComponent(R.axis)) * 10);
+  moveBody(P.pos, P.vel, dt, 0.3, bodyH(), false);
+  const maxY = R.top - 1.72;
+  if (P.pos.y > maxY) {
+    P.pos.y = maxY;
+    if (up > 0) {   // pull yourself up onto a walkable roof
+      const ix = P.pos.x - R.n.x * 0.9, iz = P.pos.z - R.n.z * 0.9;
+      if (!MAP.noRoof && !pointBlocked(ix, R.top + 1.0, iz, 0.25) && wallTopAt(ix, iz) <= R.top + 0.35) { P.pos.set(ix, R.top + 0.05, iz); endRappel(); return; }
+    }
+  }
+  if (P.pos.y <= 0.02 && up < 0) { P.pos.y = 0; endRappel(); return; }
+  if (P.pos.y < 0) P.pos.y = 0;
+  P.onGround = false;
+  const enter = keys.KeyF || keys.Enter;
+  P.ropeWindow = ropeOpening();
+  if (P.ropeWindow && enter) {
+    const ix = P.pos.x - R.n.x * 1.0, iz = P.pos.z - R.n.z * 1.0, fy = Math.floor((P.pos.y + 0.9) / FLOOR_H) * FLOOR_H;
+    if (!pointBlocked(ix, fy + 1.0, iz, 0.28)) { P.pos.set(ix, fy + 0.05, iz); endRappel(); P.vel.set(0, 0, 0); sfx.step(null, 0.4, 0); return; }
+  }
+  // rope from the anchor to the harness
+  const a = R.anchor; a.setComponent(R.axis === 0 ? 2 : 0, P.pos.getComponent(R.axis === 0 ? 2 : 0));
+  const hx = P.pos.x, hy = P.pos.y + 1.0, hz = P.pos.z, L = Math.hypot(a.x - hx, a.y - hy, a.z - hz);
+  ROPE.line.position.set(hx, hy, hz); ROPE.line.scale.set(1, L, 1); ROPE.line.lookAt(a); ROPE.line.rotateX(Math.PI / 2);
+}
 function bodyH() { return lerp(1.78, 1.2, P.crouch); }
 const camRight = () => _tv2.set(Math.cos(P.yaw), 0, -Math.sin(P.yaw));
 
 function resetPlayer(sp) {
   const op = OPS[P.op];
+  endRappel(); P.canRope = false;
   P.slots = [{ key: op.weapon, ammo: WEAPONS[op.weapon].mag, reserve: WEAPONS[op.weapon].reserve }, { key: op.pistol, ammo: WEAPONS[op.pistol].mag, reserve: WEAPONS[op.pistol].reserve }];
   P.slot = 0; P.switchT = 0;
   if (VMS[0]) { VMS[0].root.visible = true; VMS[1].root.visible = false; VM = VMS[0]; }
@@ -4121,6 +4509,15 @@ function updatePlayer(dt) {
   if (ct === 0 && P.crouch > 0.01) { if (pointBlocked(P.pos.x, P.pos.y + 1.7, P.pos.z, 0.25)) ct = 1; }
   P.crouch = approach(P.crouch, ct, dt * 5.5);
   const fx = -Math.sin(P.yaw), fz = -Math.cos(P.yaw), rx = Math.cos(P.yaw), rz = -Math.sin(P.yaw);
+  // rappel attach / release
+  const ropeKey = keys.KeyT || (TOUCH.on && TOUCH.rope);
+  if (ropeKey && !P.ropeKeyPrev && canMove) { if (P.rope) endRappel(1.2); else { const r = findRappel(); if (r) startRappel(r); } }
+  P.ropeKeyPrev = ropeKey;
+  P.canRope = !P.rope && canMove && !!findRappelCached(dt);
+  if (P.rope && (!P.alive || G.mode !== 'game')) endRappel();
+  if (P.rope && (keys.Space || TOUCH.jumpNow)) { endRappel(2.2); P.vel.y = 1.5; }
+  if (P.rope) { updateRope(dt, canMove); P.sprint = 0; }
+  if (!P.rope) {
   let mx = 0, mz = 0;
   if (canMove) {
     if (keys.KeyW) { mx += fx; mz += fz; } if (keys.KeyS) { mx -= fx; mz -= fz; }
@@ -4141,6 +4538,7 @@ function updatePlayer(dt) {
   if (P.vault > 0) { P.vault -= dt; P.vel.x += fx * 6 * dt; P.vel.z += fz * 6 * dt; }
   P.vel.y -= 14 * dt;
   P.onGround = moveBody(P.pos, P.vel, dt, 0.3, bodyH(), true);
+  }
   // footsteps
   const hs = Math.hypot(P.vel.x, P.vel.z);
   if (P.onGround && hs > 0.6) {
@@ -4204,7 +4602,7 @@ function updatePlayer(dt) {
 function updateViewmodel(dt) {
   if (!VM) return;
   const w = VM.w;
-  const hip = VM.pistol ? _tv1.set(0.09, -0.06, -0.33) : _tv1.set(0.17, -0.175, -0.44);
+  const hip = VM.pistol ? _tv1.set(0.085, -0.03, -0.3) : _tv1.set(0.17, -0.175, -0.44);
   const adsP = _tv2.set(0, -VM.sightH, VM.pistol ? -0.33 : w.sight === 'acog' ? -0.2 : -0.27);
   const a = P.ads, e = a * a * (3 - 2 * a);
   const p = V3().lerpVectors(hip, adsP, e);
@@ -4266,7 +4664,7 @@ const AA = { over: false, t: 0, target: null, vis: false };
 const _aaP = V3(), _aaH = V3();
 function enemyAimPoints() {
   const out = [];
-  if (P.team === 'atk') for (const b of bots) if (b.active && b.alive) out.push({ key: b.id, chest: _aaP.clone().set(b.pos.x, b.pos.y + 1.2, b.pos.z), head: V3(b.pos.x, b.pos.y + 1.66, b.pos.z) });
+  if (P.team !== BOT_SIDE) for (const b of bots) if (b.active && b.alive) out.push({ key: b.id, chest: _aaP.clone().set(b.pos.x, b.pos.y + 1.2, b.pos.z), head: V3(b.pos.x, b.pos.y + 1.66, b.pos.z) });
   for (const p of peers.values()) if (p.alive && p.team !== P.team) out.push({ key: p.id, chest: p.tgt.chest(V3()), head: p.tgt.head(V3()) });
   return out;
 }
@@ -4348,7 +4746,7 @@ function fireRay(o, dir, dmg, byPlayer, w, shooter) {
     const hw = rayWorld(cur, dir, maxT, MASK_SHOT);
     const wt = hw ? hw.t : maxT;
     if (byPlayer) {
-      const hb = P.team === 'atk' ? rayBots(cur, dir, wt) : null;
+      const hb = P.team !== BOT_SIDE ? rayBots(cur, dir, wt) : null;
       const hq = rayPeers(cur, dir, hb ? hb.t : wt, P.team);
       const hit = hq || hb;
       if (hit) {
@@ -4507,7 +4905,7 @@ function useSecondary() {
   P.sec--; P.meleeT = 0.3;
 }
 function setPulse(on) {
-  for (const b of bots) b.setOverlay(on && b.alive && P.team === 'atk');
+  for (const b of bots) b.setOverlay(on && b.alive && P.team !== BOT_SIDE);
   for (const p of peers.values()) p.setOverlay(on && p.alive && p.team !== P.team);
 }
 function spawnCharge(p, n, owner, remote) {
@@ -4644,7 +5042,7 @@ function melee() {
   P.meleeT = 0.55; camera.getWorldPosition(_o); camera.getWorldDirection(_d);
   setTimeout(() => {
     const fwd = V3(-Math.sin(P.yaw), 0, -Math.cos(P.yaw));
-    if (P.team === 'atk') for (const b of bots) {
+    if (P.team !== BOT_SIDE) for (const b of bots) {
       if (!b.alive) continue; const to = V3().subVectors(b.pos, P.pos); to.y = 0; const d = to.length(); to.normalize();
       if (d < 1.8 && to.dot(fwd) > 0.55) { const k = dealBotDamage(b, 95, false, to); hitMarker(k, false); sfx.hit(false); return; }
     }
@@ -4696,7 +5094,8 @@ class Bot {
     if (!sp) { this.active = false; this.alive = false; this.target = null; this.model.g.visible = false; this.setOverlay(false); return; }
     this.active = true; this.target = null; this.net = { x: sp.x, y: sp.y || 0, z: sp.z, yaw: yawTo(sp.fx - sp.x, sp.fz - sp.z), st: 0 };
     this.pos.set(sp.x, sp.y || 0, sp.z); this.vel.set(0, 0, 0); this.yaw = yawTo(sp.fx - sp.x, sp.fz - sp.z); this.home = { x: sp.x, y: sp.y || 0, z: sp.z, yaw: this.yaw };
-    this.roamer = sp.roam; this.hp = 100; this.alive = true; this.state = this.roamer ? 'wait' : 'hold'; this.waitT = rand(2, 8);
+    this.side = BOT_SIDE; this.roamer = sp.roam; this.hp = 100; this.alive = true; this.state = this.side === 'atk' ? 'stage' : this.roamer ? 'wait' : 'hold'; this.waitT = rand(2, 8);
+    this.pushDelay = rand(0, 9) + this.i * 1.2; this.flank = Math.random() < 0.55; this.plantT = 0;
     this.path = null; this.pi = 0; this.vis = 0; this.thinkT = rand(0, 0.1); this.react = 0; this.fireCD = 0; this.burst = 4; this.mag = 30; this.reloadT = 0;
     this.engageT = 0; this.lostT = 0; this.blind = 0; this.deadT = 0; this.lookT = 0; this.scan = Math.random() * 6; this.stepT = 0; this.phase = 0; this.disarm = 0; this.strafe = 1; this.strafeT = 0; this.stuckT = 0;
     this.model.g.visible = true; this.model.g.rotation.set(0, this.yaw, 0); this.model.g.position.copy(this.pos); this.setOverlay(false);
@@ -4798,16 +5197,23 @@ class Bot {
         else { this.state = 'return'; this.lookAt.copy(this.lastKnown); this.lookT = 6; this.goTo(this.home.x, this.home.z, 'return', this.home.y); }
       }
     }
-    if (G.defuser && this.state !== 'engage' && this.state !== 'blind' && this.state !== 'retake') this.goTo(G.defuser.pos.x + rand(-0.4, 0.4), G.defuser.pos.z + rand(-0.4, 0.4), 'retake', G.defuser.pos.y);
-    if (['investigate', 'roam', 'return', 'retake'].includes(this.state) && this.path) {
+    if (this.side === 'atk' && this.state !== 'engage' && this.state !== 'blind') { const fy = this.attackBrain(dt); if (fy !== null) faceYaw = fy; }
+    else if (G.defuser && this.state !== 'engage' && this.state !== 'blind' && this.state !== 'retake') this.goTo(G.defuser.pos.x + rand(-0.4, 0.4), G.defuser.pos.z + rand(-0.4, 0.4), 'retake', G.defuser.pos.y);
+    if (['investigate', 'roam', 'return', 'retake', 'push', 'flank'].includes(this.state) && this.path) {
       const tgt = this.path[this.pi];
       if (tgt) {
         const dx = tgt.x - this.pos.x, dz = tgt.z - this.pos.z, d = Math.hypot(dx, dz);
         if (d < 0.25) this.pi++;
-        else { moveX = dx / d; moveZ = dz / d; speed = this.state === 'retake' || this.state === 'investigate' ? 3.6 : 2.2; if (faceYaw === null) faceYaw = yawTo(dx, dz); }
+        else {
+          // a barricade (or window boards) straight ahead on the route: kick it down
+          this.breakT = (this.breakT || 0) - 1 / 60;
+          if (this.breakT <= 0) { this.breakT = 0.25; const o = V3(this.pos.x, this.pos.y + 1.0, this.pos.z), dv = V3(dx / d, 0, dz / d), h = rayWorld(o, dv, 1.0, MASK_SHOT); if (h && h.c.kind === 'barricade' && h.c.alive !== false) { destroyCollider(h.c, dv); sfx.wood(o); } }
+          moveX = dx / d; moveZ = dz / d; speed = this.state === 'retake' || this.state === 'investigate' ? 3.6 : this.state === 'push' || this.state === 'flank' ? 2.7 : 2.2; if (faceYaw === null) faceYaw = yawTo(dx, dz); }
       } else {
         // arrived
         if (this.state === 'retake') { this.path = null; }
+        else if (this.state === 'push') { this.path = null; const pl = BOMBS[SITE].plant; this.state = !G.defuser && Math.hypot(this.pos.x - pl.x, this.pos.z - pl.z) < 1.9 && !bots.some(b => b !== this && b.alive && b.state === 'plant') ? 'plant' : 'guard'; }
+        else if (this.state === 'flank') { this.path = null; const pl = BOMBS[SITE].plant; this.goTo(pl.x + rand(-1, 1), pl.z + rand(-1, 1), 'push', pl.y); }
         else if (this.state === 'investigate') { this.state = 'look'; this.waitT = rand(2, 4); this.path = null; }
         else if (this.state === 'return') { this.state = 'hold'; this.path = null; }
         else { this.state = 'wait'; this.waitT = rand(3, 8); this.path = null; }
@@ -4819,13 +5225,13 @@ class Bot {
       else if (!this.path) this.goTo(G.defuser.pos.x, G.defuser.pos.z, 'retake', G.defuser.pos.y);
     } else this.disarm = 0;
     if (this.state === 'look') { this.waitT -= dt; this.scan += dt * 1.6; faceYaw = this.yaw + Math.sin(this.scan) * dt * 2; if (this.waitT <= 0) { if (this.roamer) { this.state = 'wait'; this.waitT = 1; } else this.goTo(this.home.x, this.home.z, 'return', this.home.y); } }
-    if (this.state === 'wait') {
+    if (this.state === 'wait' && this.side !== 'atk') {
       this.waitT -= dt; this.scan += dt * 0.8;
       if (this.lookT > 0) { this.lookT -= dt; faceYaw = yawTo(this.lookAt.x - this.pos.x, this.lookAt.z - this.pos.z); }
       else faceYaw = this.yaw + Math.sin(this.scan) * dt * 0.6;
       if (this.waitT <= 0 && G.phase === 'action') { const p = ROAM_POINTS[Math.random() * ROAM_POINTS.length | 0]; this.goTo(p.x + rand(-0.8, 0.8), p.z + rand(-0.8, 0.8), 'roam', p.y); }
     }
-    if (this.state === 'hold') {
+    if (this.state === 'hold' && this.side !== 'atk') {
       this.scan += dt * 0.5;
       if (this.lookT > 0) { this.lookT -= dt; faceYaw = yawTo(this.lookAt.x - this.pos.x, this.lookAt.z - this.pos.z); }
       else faceYaw = this.home.yaw + Math.sin(this.scan) * 0.45;
@@ -4851,7 +5257,39 @@ class Bot {
     if (m.update) m.update(dt, moved / Math.max(dt, 1e-3), 0);
     m.body.position.y = 0.95 + Math.abs(Math.sin(this.phase)) * 0.03 * sw;
     m.torso.rotation.x = this.state === 'engage' ? -0.05 : 0.02;
+    if (m.update && this.state === 'plant') m.update(0, 0, 0.8);
     if (this.target && this.state === 'engage') { const th = this.target.head(this._h); m.head.rotation.x = clamp(Math.atan2(th.y - (this.pos.y + 1.6), Math.hypot(th.x - this.pos.x, th.z - this.pos.z)), -0.5, 0.5); } else m.head.rotation.x = 0;
+  }
+  // attacker brain: wait for the action phase, flank or push to the site, plant, then hold the defuser
+  attackBrain(dt) {
+    if (G.phase !== 'action') { this.state = 'stage'; return null; }
+    const plant = BOMBS[SITE].plant;
+    const near = (p, r) => Math.hypot(this.pos.x - p.x, this.pos.z - p.z) < r && Math.abs(this.pos.y - p.y) < 1.3;
+    if (this.state === 'stage') {
+      this.pushDelay -= dt; if (this.pushDelay > 0) return null;
+      const sitePts = ROAM_POINTS.filter(p => Math.abs(p.y - plant.y) < 1);
+      if (this.flank && sitePts.length) { const p = sitePts[Math.random() * sitePts.length | 0]; if (this.goTo(p.x + rand(-0.6, 0.6), p.z + rand(-0.6, 0.6), 'flank', p.y)) return null; }
+      this.goTo(plant.x + rand(-1.2, 1.2), plant.z + rand(-1.2, 1.2), 'push', plant.y); return null;
+    }
+    if (this.state === 'plant') {
+      if (G.defuser || !near(plant, 1.9)) { this.state = 'guard'; this.plantT = 0; return null; }
+      this.plantT += dt;
+      if (this.plantT >= 4.5) { this.plantT = 0; setDefuser(plant.clone()); this.state = 'guard'; }
+      return yawTo(plant.x - this.pos.x, plant.z - this.pos.z);
+    }
+    if (this.state === 'guard') {
+      const anchor = G.defuser ? G.defuser.pos : plant;
+      if (!near(anchor, 7)) { this.goTo(anchor.x + rand(-2.5, 2.5), anchor.z + rand(-2.5, 2.5), 'push', anchor.y); return null; }
+      if (!G.defuser && !bots.some(b => b !== this && b.alive && b.state === 'plant')) { this.goTo(plant.x, plant.z, 'push', plant.y); return null; }
+      this.scan += dt * 0.7;
+      if (this.lookT > 0) { this.lookT -= dt; return yawTo(this.lookAt.x - this.pos.x, this.lookAt.z - this.pos.z); }
+      return yawTo(this.pos.x - anchor.x, this.pos.z - anchor.z) + Math.sin(this.scan) * 1.1;
+    }
+    if (this.state === 'wait' || this.state === 'hold' || this.state === 'roam' || this.state === 'return' || (this.state !== 'push' && this.state !== 'flank' && this.state !== 'investigate' && this.state !== 'look' && !this.path)) {
+      const anchor = G.defuser ? G.defuser.pos : plant;
+      this.goTo(anchor.x + rand(-1.5, 1.5), anchor.z + rand(-1.5, 1.5), 'push', anchor.y);
+    }
+    return null;
   }
   shoot(D) {
     const tg = this.target; if (!tg) return;
@@ -4881,6 +5319,12 @@ function callout(src) { for (const b of bots) if (b !== src && b.alive && b.stat
 // =====================================================================
 // GAME FLOW
 // =====================================================================
+// squads: A starts on attack, B (with the AI) starts on defence; sides swap every two rounds, first to 4 wins
+const siteName = () => (MAP && MAP.sites[SITE] ? MAP.sites[SITE].name : 'objective').toLowerCase();
+const SWAP_EVERY = 2, WIN_ROUNDS = 4;
+const swappedAt = r => Math.floor((r - 1) / SWAP_EVERY) % 2 === 1;
+const sideOfSquad = (sq, r = G.round) => ((sq === 'A') !== swappedAt(r)) ? 'atk' : 'def';
+let BOT_SIDE = 'def';
 const G = { mode: 'menu', phase: 'menu', round: 1, score: [0, 0], timer: 0, defuser: null, paused: false, endT: 0, matchOver: false, elimT: 0 };
 const isAuthority = () => !NET.on || NET.isHost;
 const myId = () => NET.on ? NET.id : 0;
@@ -4895,7 +5339,7 @@ function beginMatchCommon() {
 }
 function startMatch() {
   if (NET.on) return;
-  P.team = 'atk'; clearPeers();
+  P.squad = 'A'; P.team = 'atk'; BOT_SIDE = 'def'; clearPeers();
   beginMatchCommon();
   startRound();
   lockPointer();
@@ -4903,7 +5347,7 @@ function startMatch() {
 function startMatchMP(m) {
   NET.roster = m.roster; NET.host = m.host; NET.isHost = m.host === NET.id; NET.inLobby = false;
   const me = m.roster.find(r => r.id === NET.id);
-  P.team = me ? me.team : 'atk'; if (me && OPS[me.op]) P.op = me.op;
+  P.squad = me && me.team === 'def' ? 'B' : 'A'; P.team = sideOfSquad(P.squad, 1); BOT_SIDE = 'def'; if (me && OPS[me.op]) P.op = me.op;
   clearPeers(); for (const r of m.roster) if (r.id !== NET.id) peers.set(r.id, new Peer(r));
   beginMatchCommon();
   for (const b of bots) b.reset(null);
@@ -4913,8 +5357,9 @@ function startMatchMP(m) {
 }
 // Authority only (single player, or the room host): pick spawns, then apply on every client.
 function startRound() {
-  const humans = NET.on ? NET.roster : [{ id: 0, team: P.team }];
+  const humans = (NET.on ? NET.roster : [{ id: 0, team: 'atk' }]).map(h => ({ ...h, team: sideOfSquad(h.team === 'atk' ? 'A' : 'B') }));
   const atkH = humans.filter(h => h.team === 'atk'), defH = humans.filter(h => h.team === 'def');
+  const botSide = sideOfSquad('B');
   const shuffle = a => a.sort(() => Math.random() - 0.5);
   const site = (Math.random() * MAP.sites.length) | 0;
   const anchors = shuffle(SPAWN_SETS.map((s, i) => i).filter(i => !SPAWN_SETS[i].roam && SPAWN_SETS[i].site === site));
@@ -4925,35 +5370,43 @@ function startRound() {
     const idx = (k % 2 === 0 && anchors.length) ? anchors.pop() : (roams.length ? roams.pop() : anchors.pop());
     const s = SPAWN_SETS[idx]; spawns[h.id] = [s.x, s.z, r2(yawTo(s.fx - s.x, s.fz - s.z)), s.y];
   });
-  const nb = Math.max(0, 5 - defH.length), botIdx = [];
-  let na = Math.min(anchors.length, nb >= 3 ? 2 + (Math.random() < 0.4 ? 1 : 0) : Math.min(nb, 1));
-  while (na-- > 0) botIdx.push(anchors.pop());
-  while (botIdx.length < nb) botIdx.push(roams.length ? roams.pop() : anchors.pop());
+  const nb = Math.max(0, 5 - (botSide === 'def' ? defH : atkH).length), botIdx = [];
+  if (botSide === 'def') {
+    let na = Math.min(anchors.length, nb >= 3 ? 2 + (Math.random() < 0.4 ? 1 : 0) : Math.min(nb, 1));
+    while (na-- > 0) botIdx.push(anchors.pop());
+    while (botIdx.length < nb) botIdx.push(roams.length ? roams.pop() : anchors.pop());
+  } else for (let k = 0; k < nb; k++) { const j = atkH.length + k; botIdx.push([r2(-3 + (j % 5) * 1.5 + rand(-0.3, 0.3)), r2(23.5 - Math.floor(j / 5) * 1.6), 0, 0]); }
   const d = { t: 'rstart', round: G.round, score: G.score, site, spawns, bots: [0, 1, 2, 3, 4].map(i => i < nb ? botIdx[i] : -1) };
   netSend(d); applyRoundStart(d);
 }
 function applyRoundStart(d) {
+  const swapNow = d.round > 1 && swappedAt(d.round) !== swappedAt(d.round - 1);
   G.round = d.round; G.score = d.score;
+  P.team = sideOfSquad(P.squad || 'A'); BOT_SIDE = sideOfSquad('B');
+  for (const p of peers.values()) p.team = sideOfSquad(p.squad);
   resetDestructibles();
   selectSite(d.site || 0); navRebuild();
   for (const c of charges) scene.remove(c.m); charges.length = 0;
   for (const t of throwables) scene.remove(t.m); throwables.length = 0;
   pulseT = 0; $('pulseFx').style.opacity = 0;
   resetPlayer(d.spawns[myId()]);
-  bots.forEach((b, i) => b.reset(d.bots[i] >= 0 ? SPAWN_SETS[d.bots[i]] : null));
+  bots.forEach((b, i) => { const e = d.bots[i]; b.reset(Array.isArray(e) ? { x: e[0], z: e[1], y: e[3] || 0, fx: e[0], fz: e[1] - 5, roam: true } : e >= 0 ? SPAWN_SETS[e] : null); });
   for (const p of peers.values()) p.respawn(d.spawns[p.id]);
   hDisarm.clear();
-  G.phase = 'prep'; G.timer = 6; G.defuser = null; defuserMesh.visible = false; bombMesh.visible = true; G.endT = 0; G.elimT = 0; G.matchOver = false;
+  const anyHumanDef = P.team === 'def' || [...peers.values()].some(p => p.team === 'def');
+  G.phase = 'prep'; G.timer = anyHumanDef ? 20 : 6; G.defuser = null; defuserMesh.visible = false; bombMesh.visible = true; G.endT = 0; G.elimT = 0; G.matchOver = false;
   $('defuser').hidden = true; $('result').hidden = true; $('killfeed').innerHTML = '';
   $('roundLabel').textContent = 'ROUND ' + G.round; updateTeamIcons(); updateHudStatic();
   { const op = OPS[P.op]; setTimeout(() => popup('', op.gName.toUpperCase() + ' · ' + op.gHint.toUpperCase()), 1800); }
-  if (P.team === 'def') banner('ROUND ' + G.round, 'DEFEND THE OFFICE', 'Get into position. Attackers are frozen until the action phase.', 5);
-  else banner('ROUND ' + G.round, 'PREPARATION', NET.on ? 'Defenders are setting up.' : `Defenders are setting up. ${DIFF[settings.difficulty].label} difficulty.`, 5);
+  const rl = 'ROUND ' + G.round + (swapNow ? ' · SIDES SWAPPED' : '');
+  if (swapNow) sfx.beep(null, 900);
+  if (P.team === 'def') banner(rl, 'DEFEND THE OBJECTIVE', (swapNow ? 'You are now defending. ' : '') + 'Get into position — attackers are frozen until the action phase.', 5);
+  else banner(rl, swapNow ? 'YOU ARE ATTACKING' : 'PREPARATION', NET.on ? 'Defenders are setting up.' : `Defenders are setting up. ${DIFF[settings.difficulty].label} difficulty.`, 5);
 }
 function endRound(atkWin, reason) {
   if (!isAuthority() || G.phase === 'end' || G.phase === 'over' || G.mode !== 'game') return;
-  G.score[atkWin ? 0 : 1]++;
-  const m = { t: 'rend', atkWin, reason, sc: G.score, over: G.score[0] >= 3 || G.score[1] >= 3 };
+  G.score[(atkWin !== swappedAt(G.round)) ? 0 : 1]++;
+  const m = { t: 'rend', atkWin, reason, sc: G.score, over: G.score[0] >= WIN_ROUNDS || G.score[1] >= WIN_ROUNDS };
   netSend(m); applyRoundEnd(m);
 }
 function applyRoundEnd(m) {
@@ -4965,29 +5418,29 @@ function applyRoundEnd(m) {
 function teamAlive(team) {
   let n = (P.team === team && P.alive) ? 1 : 0;
   for (const p of peers.values()) if (p.team === team && p.alive) n++;
-  if (team === 'def') for (const b of bots) if (b.active && b.alive) n++;
+  if (team === BOT_SIDE) for (const b of bots) if (b.active && b.alive) n++;
   return n;
 }
 function setDefuser(fp) {
   if (G.defuser) return;
   G.defuser = { pos: fp, t: 30, disarm: 0, beep: 0 };
   defuserMesh.position.copy(fp); defuserMesh.visible = true;
-  banner('', 'DEFUSER PLANTED', P.team === 'atk' ? 'Hold the office for 30 seconds.' : 'Disable it: hold F next to the defuser.', 2.5);
+  banner('', 'DEFUSER PLANTED', P.team === 'atk' ? 'Hold the ' + siteName() + ' for 30 seconds.' : 'Disable it: hold F next to the defuser.', 2.5);
   if (isAuthority()) for (const b of bots) if (b.alive) b.hear(fp, 99, 'shot');
   sfx.beep(fp, 3000);
 }
 function showResult(win, reason, over) {
   if (G.mode !== 'game') return;
   const r = $('result'); r.hidden = false;
-  $('resA').textContent = G.score[0]; $('resD').textContent = G.score[1];
+  { const ai = swappedAt(G.round) ? 1 : 0; $('resA').textContent = G.score[ai]; $('resD').textContent = G.score[1 - ai]; }
   const acc = P.shots ? Math.round(P.hits / P.shots * 100) : 0;
   $('resStats').innerHTML = `<div><b>${P.kills}</b><span>KILLS</span></div><div><b>${P.hs}</b><span>HEADSHOTS</span></div><div><b>${acc}%</b><span>ACCURACY</span></div><div><b>${P.scorePts}</b><span>SCORE</span></div>`;
   if (over) {
-    const mine = P.team === 'atk' ? G.score[0] : G.score[1], theirs = P.team === 'atk' ? G.score[1] : G.score[0];
+    const mi = P.squad === 'B' ? 1 : 0, mine = G.score[mi], theirs = G.score[1 - mi];
     const won = mine > theirs;
-    $('resK').textContent = 'MATCH COMPLETE · KESTREL HOUSE';
+    $('resK').textContent = 'MATCH COMPLETE · ' + MAP.name;
     $('resT').textContent = won ? 'VICTORY' : 'DEFEAT'; $('resT').className = 't ' + (won ? 'win' : 'lose');
-    $('resR').textContent = P.team === 'atk' ? (won ? 'THE HOUSE IS SECURE' : 'THE DEFENDERS HELD') : (won ? 'THE OFFICE HELD' : 'THE ATTACKERS TOOK THE HOUSE');
+    $('resR').textContent = won ? 'YOUR SQUAD WON ' + mine + '–' + theirs : 'THE ENEMY SQUAD WON ' + theirs + '–' + mine;
     $('resNext').textContent = NET.on && !NET.isHost ? 'WAITING FOR THE HOST' : ''; $('resBtns').hidden = false;
     $('r-again').hidden = NET.on && !NET.isHost;
     $('r-again').textContent = NET.on ? 'BACK TO LOBBY' : 'PLAY AGAIN';
@@ -5014,7 +5467,7 @@ function updateGame(dt) {
   if (G.phase === 'prep') {
     G.timer -= dt; const c = Math.ceil(G.timer);
     if (c !== G._lastC) { G._lastC = c; if (c <= 3 && c > 0) sfx.beep(null, 1200); }
-    if (G.timer <= 0) { G.phase = 'action'; G.timer = 180; banner('', 'ACTION PHASE', P.team === 'atk' ? 'Breach the house and secure the office.' : 'Hold the office. Attackers are moving in.', 2.5); sfx.beep(null, 1800); }
+    if (G.timer <= 0) { G.phase = 'action'; G.timer = 180; banner('', 'ACTION PHASE', P.team === 'atk' ? 'Breach the building and plant in the ' + siteName() + '.' : 'Hold the ' + siteName() + '. Attackers are moving in.', 2.5); sfx.beep(null, 1800); }
   } else if (G.phase === 'action') {
     if (!G.defuser) { G.timer -= dt; if (G.timer <= 0) { G.timer = 0; endRound(false, 'TIME EXPIRED'); } }
     else {
@@ -5076,8 +5529,8 @@ const LOCAL_T = {
 };
 function attackTargets() {
   const out = [];
-  if (G.mode === 'game' && P.team === 'atk' && P.alive) out.push(LOCAL_T);
-  for (const p of peers.values()) if (p.team === 'atk' && p.alive) out.push(p.tgt);
+  if (G.mode === 'game' && P.team !== BOT_SIDE && P.alive) out.push(LOCAL_T);
+  for (const p of peers.values()) if (p.team !== BOT_SIDE && p.alive) out.push(p.tgt);
   return out;
 }
 function nameOf(id) {
@@ -5086,7 +5539,7 @@ function nameOf(id) {
   if (id === myId()) return NET.on ? (settings.name || 'YOU') : 'YOU';
   const p = peers.get(id); return p ? p.name : 'OPERATOR';
 }
-function teamOf(id) { if (typeof id === 'string') return 'def'; if (id === myId()) return P.team; const p = peers.get(id); return p ? p.team : 'def'; }
+function teamOf(id) { if (typeof id === 'string') return BOT_SIDE; if (id === myId()) return P.team; const p = peers.get(id); return p ? p.team : 'def'; }
 function weaponOf(id) { if (id === myId()) return curW().name; const p = peers.get(id); return p ? WEAPONS[OPS[p.op].weapon].name : 'RIFLE'; }
 function clearPeers() { for (const p of peers.values()) p.remove(); peers.clear(); }
 function dealBotDamage(b, dmg, head, dir, explosive = false) {
@@ -5118,7 +5571,7 @@ function applyRoundState(m) {
   if (G.phase === 'end' || G.phase === 'over') return;
   const prev = G.phase;
   G.phase = m.ph; G.timer = m.tm; G.round = m.rd;
-  if (prev === 'prep' && m.ph === 'action') { banner('', 'ACTION PHASE', P.team === 'atk' ? 'Breach the house and secure the office.' : 'Hold the office. Attackers are moving in.', 2.5); sfx.beep(null, 1800); }
+  if (prev === 'prep' && m.ph === 'action') { banner('', 'ACTION PHASE', P.team === 'atk' ? 'Breach the building and plant in the ' + siteName() + '.' : 'Hold the ' + siteName() + '. Attackers are moving in.', 2.5); sfx.beep(null, 1800); }
   if (m.df) { if (!G.defuser) setDefuser(V3(m.df[0], m.df[4] || 0, m.df[1])); G.defuser.t = m.df[2]; G.defuser.disarm = m.df[3]; }
 }
 function applyBots(m) {
@@ -5199,7 +5652,7 @@ function nameTag(name, color) {
 }
 class Peer {
   constructor(r) {
-    this.id = r.id; this.name = r.name; this.team = r.team; this.op = OPS[r.op] ? r.op : 'breaker'; this.kills = 0; this.deaths = 0;
+    this.id = r.id; this.name = r.name; this.team = r.team; this.squad = r.team === 'atk' ? 'A' : 'B'; this.op = OPS[r.op] ? r.op : 'breaker'; this.kills = 0; this.deaths = 0;
     const op = OPS[this.op];
     this.model = buildSoldier({ camo: op.camo, vest: op.vest, helmet: op.vest, accent: this.team === 'atk' ? 0xff8a1e : 0x2f9bff, skin: 0x1d1f22, tint: new THREE.Color(op.camo).lerp(new THREE.Color(this.team === 'atk' ? 0xf0e6d4 : 0xa8bbd0), 0.6).getHex(), weapon: op.weapon, gun: op.gun, gear: GEAR[this.op], skinTone: Object.keys(OPS).indexOf(this.op) + (this.team === 'atk' ? 0 : 4) });
     scene.add(this.model.g); this.overlay = addOverlay(this.model);
@@ -5257,8 +5710,8 @@ function rayPeers(o, d, maxT, myTeam) {
 // bullets fired by the AI: test the local player and every attacker
 function rayTargets(o, d, maxT) {
   let best = null, bt = maxT;
-  if (P.team === 'atk') { const h = rayPlayer(o, d, bt); if (h) { bt = h.t; best = { t: h.t, head: h.head, local: true }; } }
-  for (const p of peers.values()) { if (p.team !== 'atk') continue; const h = rayPeer(p, o, d, bt); if (h) { bt = h.t; best = { t: h.t, head: h.head, local: false, id: p.id }; } }
+  if (P.team !== BOT_SIDE) { const h = rayPlayer(o, d, bt); if (h) { bt = h.t; best = { t: h.t, head: h.head, local: true }; } }
+  for (const p of peers.values()) { if (p.team === BOT_SIDE) continue; const h = rayPeer(p, o, d, bt); if (h) { bt = h.t; best = { t: h.t, head: h.head, local: false, id: p.id }; } }
   return best;
 }
 
@@ -5282,12 +5735,12 @@ function updateTeamIcons() {
   const atk = [], def = [];
   (P.team === 'atk' ? atk : def).push(ico(OPS[P.op].tag, P.alive, 'YOU', true));
   for (const p of peers.values()) (p.team === 'atk' ? atk : def).push(ico(p.name[0], p.alive, p.name));
-  for (const b of bots) if (b.active) def.push(ico(b.name[0], b.alive, b.name + ' (AI)'));
+  for (const b of bots) if (b.active) (BOT_SIDE === 'atk' ? atk : def).push(ico(b.name[0], b.alive, b.name + ' (AI)'));
   $('atkIcons').innerHTML = atk.join(''); $('defIcons').innerHTML = def.join('');
 }
 function updateHud(dt) {
   const w = curW();
-  setText('atkScore', String(G.score[0])); setText('defScore', String(G.score[1]));
+  { const ai = swappedAt(G.round) ? 1 : 0; setText('atkScore', String(G.score[ai])); setText('defScore', String(G.score[1 - ai])); }
   if (G.phase === 'prep') { setText('timer', fmtTime(G.timer)); setText('phase', 'PREPARATION'); }
   else if (G.defuser) { setText('timer', '—'); setText('phase', 'DEFUSER ACTIVE'); }
   else { setText('timer', fmtTime(G.timer)); setText('phase', 'ACTION PHASE'); }
@@ -5320,9 +5773,13 @@ function updateHud(dt) {
   om.style.opacity = G.phase === 'prep' || G.phase === 'action' ? 1 : 0;
   setText('objDist', Math.round(Math.hypot(P.pos.x - target.x, P.pos.z - target.z)) + 'm');
   // prompt
-  const show = (G.nearBomb || G.nearDefuser) && P.alive;
+  const ropeTip = P.alive && (P.canRope || P.rope) && !G.nearBomb && !G.nearDefuser;
+  const show = (G.nearBomb || G.nearDefuser || ropeTip) && P.alive;
   $('prompt').hidden = !show;
-  if (show && G.nearBomb) { $('promptBar').style.width = (P.plant * 100) + '%'; setText('promptText', P.plant > 0 ? 'PLANTING DEFUSER' : 'HOLD TO PLANT DEFUSER'); }
+  if (ropeTip) { setText('promptKey', P.rope ? (P.ropeWindow ? 'F' : 'SPACE') : 'T'); $('promptBar').style.width = '0%'; setText('promptText', P.rope ? (P.ropeWindow ? 'ENTER THROUGH THE WINDOW' : 'LET GO OF THE ROPE · W/S CLIMB') : 'RAPPEL ON THIS WALL'); }
+  else setText('promptKey', 'F');
+  if (ropeTip) { }
+  else if (show && G.nearBomb) { $('promptBar').style.width = (P.plant * 100) + '%'; setText('promptText', P.plant > 0 ? 'PLANTING DEFUSER' : 'HOLD TO PLANT DEFUSER'); }
   else if (show) { $('promptBar').style.width = Math.min(100, P.disarm / 4 * 100) + '%'; setText('promptText', P.disarm > 0 ? 'DISABLING DEFUSER' : 'HOLD TO DISABLE DEFUSER'); }
   // defuser panel
   if (G.defuser) {
@@ -5551,7 +6008,7 @@ document.addEventListener('pointerlockchange', () => {
 function pauseGame(v) {
   G.paused = v; $('pause').hidden = !v;
   if (v) {
-    $('pauseSub').textContent = `ROUND ${G.round} · KESTREL HOUSE · ${G.score[0]}–${G.score[1]}` + (NET.on ? ` · ROOM ${NET.code}` : '');
+    $('pauseSub').textContent = `ROUND ${G.round} · ${MAP.name} · ${G.score[P.squad === "B" ? 1 : 0]}–${G.score[P.squad === "B" ? 0 : 1]}` + (NET.on ? ` · ROOM ${NET.code}` : '');
     $('p-resume').textContent = G.phase === 'wait' ? 'ENTER MATCH' : 'RESUME';
     drawBlueprint($('bp2'), true); mouseDown = false; rmb = false; for (const k in keys) keys[k] = false;
   } else lockPointer();
@@ -5651,13 +6108,14 @@ function setupTouch() {
       else if (act === 'gadget') useGadget();
       else if (act === 'melee') melee();
       else if (act === 'use') keys.KeyF = true;
+      else if (act === 'rope') TOUCH.rope = true;
       else if (act === 'leanl') { keys.KeyQ = !keys.KeyQ; keys.KeyE = false; }
       else if (act === 'leanr') { keys.KeyE = !keys.KeyE; keys.KeyQ = false; }
       else if (act === 'score') showScoreboard(true);
     });
     // dragging off the fire button also aims, like most mobile shooters
     b.addEventListener('pointermove', e => { if ((act === 'fire' || act === 'hip') && last && !G.paused) { touchLook(e.clientX - last.x, e.clientY - last.y); last.x = e.clientX; last.y = e.clientY; } });
-    const up = () => { b.classList.remove('down'); last = null; if (act === 'fire') { mouseDown = false; if (TOUCH.fireAds) rmb = false; TOUCH.fireAds = false; } if (act === 'hip') mouseDown = false; if (act === 'use') keys.KeyF = false; if (act === 'score') showScoreboard(false); };
+    const up = () => { b.classList.remove('down'); last = null; if (act === 'rope') TOUCH.rope = false; if (act === 'fire') { mouseDown = false; if (TOUCH.fireAds) rmb = false; TOUCH.fireAds = false; } if (act === 'hip') mouseDown = false; if (act === 'use') keys.KeyF = false; if (act === 'score') showScoreboard(false); };
     b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up);
   }
 }
@@ -5665,7 +6123,8 @@ function updateTouchHud() {
   if (!TOUCH.on) return;
   $('t-ads').classList.toggle('on', rmb); $('t-crouch').classList.toggle('on', !!P.crouchT);
   $('t-leanl').classList.toggle('on', !!keys.KeyQ); $('t-leanr').classList.toggle('on', !!keys.KeyE);
-  $('t-use').hidden = !(G.nearBomb || G.nearDefuser);
+  $('t-use').hidden = !(G.nearBomb || G.nearDefuser || (P.rope && P.ropeWindow));
+  $('t-rope').hidden = !(P.canRope || P.rope); $('t-rope').textContent = P.rope ? 'LET GO' : 'ROPE';
   $('t-gadget').classList.toggle('empty', P.gadgets <= 0); $('t-nade').classList.toggle('empty', P.sec <= 0);
 }
 
@@ -5694,7 +6153,7 @@ addEventListener('keydown', e => {
 addEventListener('keyup', e => { keys[e.code] = false; if (e.code === 'Tab') showScoreboard(false); });
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; mouseDown = false; rmb = false; });
 function tryJump() {
-  if (!P.onGround || !P.alive || G.phase === 'wait' || (G.phase === 'prep' && P.team === 'atk')) return;
+  if (P.rope || !P.onGround || !P.alive || G.phase === 'wait' || (G.phase === 'prep' && P.team === 'atk')) return;
   const fx = -Math.sin(P.yaw), fz = -Math.cos(P.yaw);
   const list = queryBox(P.pos.x - 1.5, P.pos.z - 1.5, P.pos.x + 1.5, P.pos.z + 1.5, []);
   let top = -1;
@@ -5727,7 +6186,7 @@ function buildMenuModel() {
 }
 function refreshMenu() {
   if (MAP) {
-    $('heroEyebrow').textContent = 'Operation · ' + MAP.name; $('heroText').textContent = MAP.blurb + ' First to three rounds wins.';
+    $('heroEyebrow').textContent = 'Operation · ' + MAP.name; $('heroText').textContent = MAP.blurb + ' Sides swap every two rounds — first to four wins.';
     $('heroTitle').innerHTML = esc(MAP.title[0]) + ' <br><em>' + esc(MAP.title[1]) + '</em> ' + esc(MAP.title[2]);
     $('intelTag').textContent = MAP.floors + ' FLOORS · ' + MAP.sites.length + ' SITES';
     for (const b of document.querySelectorAll('#map-seg button')) b.setAttribute('aria-pressed', b.dataset.m === MAPKEY ? 'true' : 'false');
@@ -5782,7 +6241,7 @@ function bindMenu() {
   $('btn-deploy').addEventListener('click', () => { sfx.ui('click'); startMatch(); });
   $('btn-deploy').addEventListener('mouseenter', () => sfx.ui('hover'));
   $('opchip').addEventListener('click', () => setScreen('ops'));
-  for (const b of document.querySelectorAll('#map-seg button')) b.addEventListener('click', () => { sfx.ui('click'); switchMap(b.dataset.m); });
+  for (const b of document.querySelectorAll('#map-seg button')) b.addEventListener('click', () => { sfx.ui('click'); switchMap(b.dataset.m === 'random' ? randomMap(MAPKEY) : b.dataset.m); });
   for (const b of document.querySelectorAll('#diff-seg button')) b.addEventListener('click', () => { settings.difficulty = b.dataset.d; save('bp_settings', settings); refreshMenu(); sfx.ui('click'); });
   $('p-resume').addEventListener('click', () => { pauseGame(false); });
   $('btn-fs').addEventListener('click', () => { sfx.ui('click'); toggleFullscreen(); });
@@ -5807,7 +6266,7 @@ function bindMenu() {
   $('mp-code').addEventListener('keydown', e => { if (e.key === 'Enter') join(); });
   $('lb-ops').innerHTML = Object.entries(OPS).map(([k, o]) => `<button data-op="${k}" id="lbop-${k}"><b>${o.tag}</b> ${o.name}</button>`).join('');
   for (const b of document.querySelectorAll('#lb-ops button')) b.addEventListener('click', () => { P.op = b.dataset.op; settings.operator = P.op; save('bp_settings', settings); buildMenuModel(); refreshMenu(); netSend({ t: 'op', op: P.op }); sfx.ui('click'); });
-  for (const b of document.querySelectorAll('#lb-maps button')) b.addEventListener('click', () => { if (NET.isHost) netSend({ t: 'map', map: b.dataset.m }); });
+  for (const b of document.querySelectorAll('#lb-maps button')) b.addEventListener('click', () => { if (NET.isHost) netSend({ t: 'map', map: b.dataset.m === 'random' ? randomMap(NET.map || MAPKEY) : b.dataset.m }); });
   $('lb-joinatk').addEventListener('click', () => netSend({ t: 'team', team: 'atk' }));
   $('lb-joindef').addEventListener('click', () => netSend({ t: 'team', team: 'def' }));
   $('lb-start').addEventListener('click', () => { lockPointer(); netSend({ t: 'start', map: NET.map || MAPKEY }); });
@@ -5976,7 +6435,7 @@ async function boot() {
   setLoad('COMPILING SHADERS'); await tick();
   try { renderer.compile(scene, camera); } catch (e) { }
   $('loading').hidden = true; $('menu').hidden = false;
-  if (/[?&]debug\b/.test(location.search)) window.__bp = { mergeStatic, renderer, scene, world, destructibles, vmCam, get VMS() { return VMS; }, P, G, NET, startMatch, playerFire, useGadget, switchWeapon, get bots() { return bots; }, get menuModel() { return menuModel; }, SOLDIER, findPath, switchMap, get MAP() { return MAP; }, STAIRS, navWalk, navBlock, NWH, colliders };
+  if (/[?&]debug\b/.test(location.search)) window.__bp = { queryBox, startRound, findRappel, startRappel, get BOT_SIDE() { return BOT_SIDE; }, keys, mergeStatic, renderer, scene, world, destructibles, vmCam, get VMS() { return VMS; }, P, G, NET, startMatch, playerFire, useGadget, switchWeapon, get bots() { return bots; }, get menuModel() { return menuModel; }, SOLDIER, findPath, switchMap, get MAP() { return MAP; }, STAIRS, navWalk, navBlock, NWH, colliders };
   frame();
   streamHD();
 }

@@ -72,7 +72,7 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 64 * 1024 });
 const rooms = new Map();
 let nextId = 1;
-const MAPS = ['kestrel', 'harbor', 'lodge'];
+const MAPS = ['kestrel', 'harbor', 'lodge', 'bank', 'hotel'];
 const OPS = ['breaker', 'spectre', 'havoc', 'lumen', 'shroud', 'relay', 'raze'];
 
 function makeCode() {
